@@ -11,7 +11,7 @@ export default function PrintHeader({ title, courseInfo, programName = 'Bachelor
     <div className="only-print teaching-file-cover-container" style={{ maxWidth: '100%', margin: '0', padding: '0 0 1rem 0', borderBottom: '2px solid #1e3a8a', marginBottom: '1.25rem', background: '#ffffff', color: '#000000' }}>
       <div style={{ textAlign: 'left', marginBottom: '1.25rem' }}>
         <h1 className="cover-title" style={{ textAlign: 'left', fontSize: '1.4rem', color: '#1e3a8a', fontWeight: '700', margin: '0 0 0.25rem 0' }}>
-          KUALA LUMPUR UNIVERSITY OF<br />SCIENCE AND TECHNOLOGY
+          KUALA LUMPUR UNIVERSITY OF SCIENCE AND TECHNOLOGY
         </h1>
         <div className="cover-subtitle" style={{ textAlign: 'left', fontFamily: '"Segoe UI Light", "Segoe UI", sans-serif', fontWeight: '300', fontSize: '28px', color: '#1e3a8a', margin: '0.6rem 0 0.4rem 0', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
           {title}
