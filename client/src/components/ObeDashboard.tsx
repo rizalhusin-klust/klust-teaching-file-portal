@@ -763,21 +763,27 @@ export default function ObeDashboard({ assessments,  obeMetrics, gradesData, isP
           {/* Screen Mode: Sub tabs nav */}
           <div className="no-print" style={{ display: 'flex', gap: '10px', borderBottom: '1px solid var(--border-color)', paddingBottom: '10px' }}>
             <button className={`btn ${activeSubTab === 'clo' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setActiveSubTab('clo')}>
-              📚 CLO Analysis
+              📊 CLO Analysis
             </button>
             <button className={`btn ${activeSubTab === 'plo' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setActiveSubTab('plo')}>
               📊 PLO Analysis
             </button>
             <button className={`btn ${activeSubTab === 'student-clo' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setActiveSubTab('student-clo')}>
-              👥 Student CLO list
+              👥 Student CLO
             </button>
             <button className={`btn ${activeSubTab === 'student-plo' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setActiveSubTab('student-plo')}>
-              👥 Student PLO list
+              👥 Student PLO
             </button>
             <button className={`btn ${activeSubTab === 'cqi' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setActiveSubTab('cqi')}>
-              📋 CQI Report Form
+              📈 CQI Report
             </button>
           </div>
+
+          {!isPrintMode && activeSubTab !== 'cqi' && (
+            <div className="only-print" style={{ marginBottom: '20px' }}>
+              <PrintHeader title="OBE CLO / PLO Achievement" courseInfo={courseInfo || null} />
+            </div>
+          )}
 
           {activeSubTab === 'clo' && renderCloTable()}
           {activeSubTab === 'plo' && renderPloTable()}
