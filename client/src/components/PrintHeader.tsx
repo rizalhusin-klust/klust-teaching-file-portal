@@ -13,7 +13,7 @@ export default function PrintHeader({ title, courseInfo, programName = 'Bachelor
         <h1 className="cover-title" style={{ textAlign: 'left', fontSize: '1.4rem', color: '#1e3a8a', fontWeight: '700', margin: '0 0 0.25rem 0' }}>
           KUALA LUMPUR UNIVERSITY OF<br />SCIENCE AND TECHNOLOGY
         </h1>
-        <div className="cover-subtitle" style={{ textAlign: 'left', fontSize: '1.8rem', fontWeight: '700', color: '#1e3a8a', margin: '0.6rem 0 0.4rem 0', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+        <div className="cover-subtitle" style={{ textAlign: 'left', fontFamily: '"Segoe UI Light", "Segoe UI", sans-serif', fontWeight: '300', fontSize: '28px', color: '#1e3a8a', margin: '0.6rem 0 0.4rem 0', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
           {title}
         </div>
       </div>
