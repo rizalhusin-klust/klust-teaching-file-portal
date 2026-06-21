@@ -380,8 +380,8 @@ function App() {
 
     /* ── Sidebar ───────────────────────────────── */
     .sidebar {
-      width: 230px;
-      min-width: 230px;
+        width: 28%;
+        min-width: 28%;
       background: #141c2e;
       border-right: 1px solid #1e2d45;
       display: flex;
