@@ -1392,6 +1392,18 @@ function App() {
         </div>
 
           <PrintSeparator number={10} title={"Final Exam Scripts"} />
+        <div className="print-all-section">
+          <PrintHeader title="Examination Script Samples Portfolio" courseInfo={courseInfo} programName={programName} />
+          <CoursePortfolio
+            courseInfo={courseInfo}
+            onRefresh={() => {}}
+            API_BASE={API_BASE}
+            activeCourseId={activeCourseId}
+            students={students}
+            printMode="exam"
+            isPrintMode={true}
+          />
+        </div>
 
           <PrintSeparator number={11} title={"Coursework with Marking Schemes"} />
           <div className="print-all-section">
@@ -1405,6 +1417,18 @@ function App() {
           </div>
 
           <PrintSeparator number={12} title={"Samples of Student Coursework"} />
+        <div className="print-all-section">
+          <PrintHeader title="Coursework Student Samples Portfolio" courseInfo={courseInfo} programName={programName} />
+          <CoursePortfolio
+            courseInfo={courseInfo}
+            onRefresh={() => {}}
+            API_BASE={API_BASE}
+            activeCourseId={activeCourseId}
+            students={students}
+            printMode="coursework"
+            isPrintMode={true}
+          />
+        </div>
 
           <PrintSeparator number={13} title={"Miscellaneous Records"} />
           <div className="print-all-section">

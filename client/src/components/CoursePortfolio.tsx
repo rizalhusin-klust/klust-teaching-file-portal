@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import type { CourseInfo, Student } from '../App';
 
-type CoursePortfolioProps = {
+export type CoursePortfolioProps = {
+  printMode?: 'coursework' | 'exam' | 'misc' | 'all';
+  isPrintMode?: boolean;
+
   courseInfo: CourseInfo | null;
   onRefresh: () => void;
   API_BASE: string;
@@ -46,7 +49,7 @@ const PORTFOLIO_KEYS = [
   { key: 'exam_low_3', label: 'Exam Low Sample 3', group: 'exam_low' }
 ];
 
-export default function CoursePortfolio({ courseInfo, onRefresh, API_BASE, activeCourseId, students }: CoursePortfolioProps) {
+export default function CoursePortfolio({ courseInfo, onRefresh, API_BASE, activeCourseId, students, printMode = 'all' }: CoursePortfolioProps) {
   const [portfolio, setPortfolio] = useState<PortfolioMap>({});
   const [inputLinks, setInputLinks] = useState<{ [key: string]: string }>({});
   const [uploadingKey, setUploadingKey] = useState<string | null>(null);
@@ -548,7 +551,7 @@ export default function CoursePortfolio({ courseInfo, onRefresh, API_BASE, activ
             KUALA LUMPUR UNIVERSITY OF<br />SCIENCE AND TECHNOLOGY
           </h1>
           <div className="cover-subtitle" style={{ textAlign: 'left', fontSize: '1.3rem', fontWeight: 300, color: '#1e3a8a', margin: '0.4rem 0', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            Course Portfolio
+            {printMode === 'exam' ? 'Examination Script Samples' : printMode === 'coursework' ? 'Coursework Student Samples' : 'Course Portfolio'}
           </div>
         </div>
         <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '1.25rem', fontSize: '0.875rem' }}>
