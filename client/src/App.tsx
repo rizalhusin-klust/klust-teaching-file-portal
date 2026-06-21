@@ -1072,7 +1072,7 @@ function App() {
           <button className="btn btn-secondary" onClick={() => window.print()} title="Print current tab view">
             {activeTab === 'dashboard' ? '🖨️ Print Cover' : '🖨️ Print'}
           </button>
-          {activeTab === 'marks_attendance' && (
+          {activeTab === 'setup' && (
             <>
               <button
                 className="btn btn-primary"
