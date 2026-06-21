@@ -116,14 +116,14 @@ export default function Dashboard({ API_BASE, gradesData, obeMetrics, courseInfo
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '24px' }}>
           
           {/* Grade Distribution Bar Chart */}
-          <div className="view-card" style={{ flex: 1 }}>
+          <div className="view-card" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
             <h2>Grade Distribution</h2>
-            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: '220px', padding: '10px 0 20px', marginTop: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flex: 1, minHeight: '220px', padding: '10px 0 10px', marginTop: '10px' }}>
               {Object.keys(gradeDistribution).map(grade => {
                 const val = gradeDistribution[grade] || 0;
-                const heightPct = (val / maxGradeCount) * 80 + 5; 
+                const heightPct = (val / maxGradeCount) * 85 + 5; 
                 return (
-                  <div key={grade} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, gap: '8px' }}>
+                  <div key={grade} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center', flex: 1, height: '100%', gap: '8px' }}>
                     <span style={{ fontSize: '0.75rem', fontWeight: 600, color: val > 0 ? 'var(--primary)' : 'var(--text-muted)' }}>
                       {val > 0 ? val : ''}
                     </span>
