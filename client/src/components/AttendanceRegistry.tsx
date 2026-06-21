@@ -350,9 +350,9 @@ export default function AttendanceRegistry({ students, attendance, onUpdateAtten
           borderRadius: '8px',
         }}>
           <h3 className="no-print" style={{ fontWeight: 600, fontSize: '1rem', color: 'var(--text-active)', marginBottom: '16px' }}>
-            📅 Student Monthly Attendance PDFs (Up to 5)
+            📄 Student Monthly Attendance PDFs (Up to 5)
           </h3>
-          <div className="no-print" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
+          <div className="no-print" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {[1, 2, 3, 4, 5].map(i => {
               const key = `attendance_pdf_${i}`;
               const pdf = pdfs[key];
