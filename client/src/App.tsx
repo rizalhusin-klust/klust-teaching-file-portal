@@ -934,9 +934,9 @@ function App() {
       case 'reports':
         return <LecturerReport courseInfo={courseInfo} reports={reports} onRefresh={refreshAll} API_BASE={API_BASE} activeCourseId={activeCourseId} />;
       case 'coursework_docs':
-        return <CourseworkDocs courseInfo={courseInfo} onRefresh={refreshAll} API_BASE={API_BASE} activeCourseId={activeCourseId} />;
+        return <CourseworkDocs courseInfo={courseInfo} onRefresh={refreshAll} API_BASE={API_BASE} activeCourseId={activeCourseId} programName={programName} />;
       case 'final_exam_docs':
-        return <FinalExamDocs courseInfo={courseInfo} onRefresh={refreshAll} API_BASE={API_BASE} activeCourseId={activeCourseId} />;
+        return <FinalExamDocs courseInfo={courseInfo} onRefresh={refreshAll} API_BASE={API_BASE} activeCourseId={activeCourseId} programName={programName} />;
       case 'portfolio':
         return <CoursePortfolio courseInfo={courseInfo} onRefresh={refreshAll} API_BASE={API_BASE} activeCourseId={activeCourseId} students={students} />;
       default:
@@ -1352,23 +1352,23 @@ function App() {
 
         {/* ===== SECTION 8: COURSEWORK DOCS ===== */}
         <div className="print-all-section">
-          <PrintHeader title="Coursework Documents" courseInfo={courseInfo} programName={programName} />
           <CourseworkDocs
             courseInfo={courseInfo}
             onRefresh={() => {}}
             API_BASE={API_BASE}
             activeCourseId={activeCourseId}
+            programName={programName}
           />
         </div>
 
         {/* ===== SECTION 9: EXAMINATION DOCS ===== */}
         <div className="print-all-section">
-          <PrintHeader title="Examination Documents" courseInfo={courseInfo} programName={programName} />
           <FinalExamDocs
             courseInfo={courseInfo}
             onRefresh={() => {}}
             API_BASE={API_BASE}
             activeCourseId={activeCourseId}
+            programName={programName}
           />
         </div>
 

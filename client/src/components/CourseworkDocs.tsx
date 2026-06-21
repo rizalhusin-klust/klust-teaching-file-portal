@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import type { CourseInfo } from '../App';
+import PrintHeader from './PrintHeader';
 
 type CourseworkDocsProps = {
   courseInfo: CourseInfo | null;
   onRefresh: () => void;
   API_BASE: string;
   activeCourseId: number | null;
+  programName?: string;
+  hidePrintHeader?: boolean;
 };
 
 type PortfolioItem = {
@@ -18,7 +21,7 @@ type PortfolioMap = {
   [key: string]: PortfolioItem;
 };
 
-export default function CourseworkDocs({ courseInfo, onRefresh, API_BASE, activeCourseId }: CourseworkDocsProps) {
+export default function CourseworkDocs({ courseInfo, onRefresh, API_BASE, activeCourseId, programName = 'Bachelor of Science (Architectural Studies)', hidePrintHeader = false }: CourseworkDocsProps) {
   const [portfolio, setPortfolio] = useState<PortfolioMap>({});
   const [inputLinks, setInputLinks] = useState<{ [key: string]: string }>({});
   const [uploadingKey, setUploadingKey] = useState<string | null>(null);
@@ -286,16 +289,6 @@ export default function CourseworkDocs({ courseInfo, onRefresh, API_BASE, active
                       <img src={fullUrl} alt={item.name || 'Image Document'} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
                     </div>
                   )}
-                  
-                  {/* Hyperlink for Print Mode */}
-                  {(isPdf || isImg || item.type === 'link') && (
-                    <div className="print-link-only" style={{ marginTop: '10px' }}>
-                      {item.type === 'link' ? '🔗' : '📄'} <strong>{item.name || (item.type === 'link' ? 'Provided Link' : 'Uploaded File')}:</strong>{' '}
-                      <a href={item.type === 'link' ? item.value : fullUrl} style={{ color: 'blue', textDecoration: 'underline' }}>
-                        {item.type === 'link' ? item.value : fullUrl}
-                      </a>
-                    </div>
-                  )}
                 </>
               );
             })()}
@@ -369,8 +362,82 @@ export default function CourseworkDocs({ courseInfo, onRefresh, API_BASE, active
     );
   };
 
+  const getSummaryData = () => {
+    const summary = [];
+    for (let i = 1; i <= setCount; i++) {
+      const suffix = i === 1 ? '' : `_${i}`;
+      const labelSuffix = i === 1 ? '' : ` ${i}`;
+      
+      const briefKey = `coursework_brief_doc${suffix}`;
+      const rubricKey = `coursework_rubric_doc${suffix}`;
+      
+      const briefItem = portfolio[briefKey];
+      const rubricItem = portfolio[rubricKey];
+
+      summary.push({
+        label: `Coursework Brief${labelSuffix}`,
+        item: briefItem
+      });
+      summary.push({
+        label: `Marking Scheme / Rubric${labelSuffix}`,
+        item: rubricItem
+      });
+    }
+    return summary;
+  };
+
   return (
     <div className="view-card" style={{ padding: '20px 15px' }}>
+      {!hidePrintHeader && (
+        <PrintHeader title="Coursework Documents" courseInfo={courseInfo} programName={programName} />
+      )}
+      
+      {/* Print-Only Summary Table */}
+      <div className="print-link-only" style={{ marginBottom: '20px' }}>
+        <h3 style={{ fontSize: '1.2rem', marginBottom: '10px', color: '#000', borderBottom: '1px solid #ccc', paddingBottom: '4px' }}>
+          Coursework Documents Summary
+        </h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+          <thead>
+            <tr>
+              <th style={{ border: '1px solid #cbd5e1', padding: '8px', background: '#f8fafc', color: '#1e3a8a', textAlign: 'left', width: '30%' }}>Document Type</th>
+              <th style={{ border: '1px solid #cbd5e1', padding: '8px', background: '#f8fafc', color: '#1e3a8a', textAlign: 'left' }}>Uploaded File / Link</th>
+            </tr>
+          </thead>
+          <tbody>
+            {getSummaryData().map((row, idx) => {
+              let url = '';
+              let displayName = 'Not Provided';
+              if (row.item) {
+                if (row.item.type === 'link') {
+                  url = row.item.value || '';
+                  displayName = row.item.value || '';
+                } else if (row.item.type === 'file') {
+                  const rawPath = row.item.value || '';
+                  const cleanPath = rawPath.replace(/\\/g, '/');
+                  const filename = cleanPath.split('/').pop() || '';
+                  url = `${API_BASE}/uploads/${filename}`;
+                  displayName = row.item.name || filename || 'Uploaded File';
+                }
+              }
+              
+              return (
+                <tr key={idx}>
+                  <td style={{ border: '1px solid #cbd5e1', padding: '8px', fontWeight: 'bold', color: '#334155' }}>{row.label}</td>
+                  <td style={{ border: '1px solid #cbd5e1', padding: '8px', color: '#334155' }}>
+                    {row.item ? (
+                      <a href={url} style={{ color: 'blue', textDecoration: 'underline' }}>{displayName}</a>
+                    ) : (
+                      <span style={{ fontStyle: 'italic', color: '#64748b' }}>Not Provided</span>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
       <h2 className="no-print" style={{ fontSize: '1.4rem', marginBottom: '8px' }}>
         Coursework Documents
       </h2>
@@ -378,7 +445,7 @@ export default function CourseworkDocs({ courseInfo, onRefresh, API_BASE, active
         Upload the Coursework Brief and the corresponding Marking Scheme / Rubric as a PDF, or provide a direct link.
       </p>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
+      <div className="no-print" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
         {Array.from({ length: setCount }).flatMap((_, i) => {
           const idx = i + 1;
           const suffix = idx === 1 ? '' : `_${idx}`;
