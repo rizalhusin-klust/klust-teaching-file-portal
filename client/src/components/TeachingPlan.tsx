@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { WeeklyReport, CourseInfo, Student } from '../App';
+import type { WeeklyReport, CourseInfo, Student, PlannedAssessment } from '../App';
 
 type TeachingPlanProps = {
   reports: WeeklyReport[];
@@ -9,6 +9,8 @@ type TeachingPlanProps = {
   courseInfo: CourseInfo | null;
   students: Student[];
   clos: { clo_no: string; description: string }[];
+  plos: { plo_no: string; description: string }[];
+  plannedAssessments: PlannedAssessment[];
 };
 
 export default function TeachingPlan({
@@ -18,7 +20,9 @@ export default function TeachingPlan({
   activeCourseId,
   courseInfo,
   students,
-  clos
+  clos,
+  plos,
+  plannedAssessments
 }: TeachingPlanProps) {
   const [localReports, setLocalReports] = useState<WeeklyReport[]>([]);
   const [referencesInput, setReferencesInput] = useState('');
@@ -179,6 +183,60 @@ export default function TeachingPlan({
                   <td style={{ verticalAlign: 'top', width: '85%', whiteSpace: 'normal', fontSize: '0.875rem', lineHeight: '1.4' }}>{c.description}</td>
                 </tr>
               ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Program Learning Outcomes (PLOs) Card */}
+      <div className="view-card" style={{ pageBreakInside: 'avoid' }}>
+        <h2>Program Learning Outcomes (PLOs)</h2>
+        <div className="table-container" style={{ marginTop: '10px' }}>
+          <table className="data-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr>
+                <th style={{ width: '15%', textAlign: 'left', fontWeight: 'bold' }}>PLO No</th>
+                <th style={{ width: '85%', textAlign: 'left', fontWeight: 'bold' }}>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              {plos.map(p => (
+                <tr key={p.plo_no}>
+                  <td style={{ fontWeight: 'bold', color: 'var(--info)', verticalAlign: 'top', width: '15%' }}>{p.plo_no}</td>
+                  <td style={{ verticalAlign: 'top', width: '85%', whiteSpace: 'normal', fontSize: '0.875rem', lineHeight: '1.4' }}>{p.description}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Planned Assessments Scheme Card */}
+      <div className="view-card" style={{ pageBreakInside: 'avoid' }}>
+        <h2>Planned Assessments Scheme</h2>
+        <div className="table-container" style={{ marginTop: '10px' }}>
+          <table className="data-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr>
+                <th style={{ textAlign: 'left', fontWeight: 'bold' }}>Assessment Title</th>
+                <th style={{ textAlign: 'left', fontWeight: 'bold' }}>Type</th>
+                <th style={{ textAlign: 'left', fontWeight: 'bold' }}>Weightage (%)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {plannedAssessments.length === 0 ? (
+                <tr>
+                  <td colSpan={3} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>No planned assessments configured.</td>
+                </tr>
+              ) : (
+                plannedAssessments.map(p => (
+                  <tr key={p.id}>
+                    <td style={{ fontWeight: 'bold' }}>{p.title}</td>
+                    <td>{p.type === 'CW' ? 'Coursework (CW)' : 'Final Exam (E)'}</td>
+                    <td>{p.weightage.toFixed(1)}%</td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

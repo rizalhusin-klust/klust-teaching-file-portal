@@ -911,6 +911,8 @@ function App() {
             courseInfo={courseInfo}
             students={students}
             clos={clos}
+            plos={plos}
+            plannedAssessments={plannedAssessments}
           />
         );
       case 'teaching_materials':
@@ -1299,6 +1301,8 @@ function App() {
             courseInfo={courseInfo}
             students={students}
             clos={clos}
+            plos={plos}
+            plannedAssessments={plannedAssessments}
           />
         </div>
 
