@@ -1072,44 +1072,48 @@ function App() {
           <button className="btn btn-secondary" onClick={() => window.print()} title="Print current tab view">
             {activeTab === 'dashboard' ? '🖨️ Print Cover' : '🖨️ Print'}
           </button>
-          <button
-            className="btn btn-primary"
-            onClick={handlePrintAll}
-            disabled={isPrintingAll || isExportingHtml}
-            title="Print all documents in sequence"
-            style={{
-              background: isPrintingAll
-                ? 'linear-gradient(135deg, #4b4b8a, #6b4ba6)'
-                : 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-              border: 'none',
-              fontWeight: '700',
-              letterSpacing: '0.03em',
-              opacity: (isPrintingAll || isExportingHtml) ? 0.75 : 1,
-              cursor: (isPrintingAll || isExportingHtml) ? 'not-allowed' : 'pointer',
-              transition: 'all 0.2s'
-            }}
-          >
-            {isPrintingAll ? '⏳ Preparing...' : '🖨️ Print All'}
-          </button>
-          <button
-            className="btn btn-primary"
-            onClick={handleExportHtml}
-            disabled={isPrintingAll || isExportingHtml}
-            title="Export all documents as a single HTML file"
-            style={{
-              background: isExportingHtml
-                ? 'linear-gradient(135deg, #166534, #14532d)'
-                : 'linear-gradient(135deg, #16a34a, #059669)',
-              border: 'none',
-              fontWeight: '700',
-              letterSpacing: '0.03em',
-              opacity: (isPrintingAll || isExportingHtml) ? 0.75 : 1,
-              cursor: (isPrintingAll || isExportingHtml) ? 'not-allowed' : 'pointer',
-              transition: 'all 0.2s'
-            }}
-          >
-            {isExportingHtml ? '⏳ Exporting...' : '📥 Export HTML'}
-          </button>
+          {activeTab === 'marks_attendance' && (
+            <>
+              <button
+                className="btn btn-primary"
+                onClick={handlePrintAll}
+                disabled={isPrintingAll || isExportingHtml}
+                title="Print all documents in sequence"
+                style={{
+                  background: isPrintingAll
+                    ? 'linear-gradient(135deg, #4b4b8a, #6b4ba6)'
+                    : 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                  border: 'none',
+                  fontWeight: '700',
+                  letterSpacing: '0.03em',
+                  opacity: (isPrintingAll || isExportingHtml) ? 0.75 : 1,
+                  cursor: (isPrintingAll || isExportingHtml) ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.2s'
+                }}
+              >
+                {isPrintingAll ? '⏳ Preparing...' : '🖨️ Print All'}
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={handleExportHtml}
+                disabled={isPrintingAll || isExportingHtml}
+                title="Export all documents as a single HTML file"
+                style={{
+                  background: isExportingHtml
+                    ? 'linear-gradient(135deg, #166534, #14532d)'
+                    : 'linear-gradient(135deg, #16a34a, #059669)',
+                  border: 'none',
+                  fontWeight: '700',
+                  letterSpacing: '0.03em',
+                  opacity: (isPrintingAll || isExportingHtml) ? 0.75 : 1,
+                  cursor: (isPrintingAll || isExportingHtml) ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.2s'
+                }}
+              >
+                {isExportingHtml ? '⏳ Exporting...' : '📥 Export HTML'}
+              </button>
+            </>
+          )}
         </div>
 
         {renderContent()}
