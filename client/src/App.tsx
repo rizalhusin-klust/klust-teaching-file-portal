@@ -402,10 +402,21 @@ function App() {
       </section>`
     );
 
-    // Panel 4: Syllabus Outline (sectionHtmls[3])
+    // Panel 4: Syllabus Outline (Table 4 PDF)
+    const fullSyllabusPdfUrl = courseInfo?.table4_path ? `${serverUrl}${courseInfo.table4_path}` : '';
+    const syllabusPanelContent = fullSyllabusPdfUrl
+      ? `<iframe class="export-only" src="${fullSyllabusPdfUrl}" style="width:100%;height:100vh;page-break-after:always;break-after:page;border:none;border-radius:8px;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);background-color:#525659;" title="Table 4 (Syllabus Outline PDF Document)"></iframe>
+         <div class="print-link-only" style="margin-top: 20px;">📄 <strong>Syllabus Outline PDF:</strong> <a href="${fullSyllabusPdfUrl}" style="color: blue; text-decoration: underline;">${fullSyllabusPdfUrl}</a></div>`
+      : `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:calc(100vh - 120px);text-align:center;color:#475569;padding:20px;box-sizing:border-box;">
+          <div style="font-size:4rem;margin-bottom:16px;">📄</div>
+          <h2 style="font-size:1.5rem;font-weight:700;color:#1e293b;margin-bottom:8px;">No Syllabus Outline PDF Uploaded</h2>
+          <p style="font-size:0.95rem;color:#64748b;max-width:400px;line-height:1.5;">The Table 4 (Syllabus Outline PDF Document) has not been uploaded yet.</p>
+        </div>`;
     panels.push(
       `<section id="panel-4" class="panel">
-        <div class="panel-inner">${sectionHtmls[3]}</div>
+        <div class="panel-inner" style="padding:16px;height:100%;box-sizing:border-box;background:#f8fafc !important;">
+          ${syllabusPanelContent}
+        </div>
       </section>`
     );
 
