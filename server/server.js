@@ -26,6 +26,10 @@ app.use(express.json({ limit: '50mb' }));
 // Serve uploaded files (PDFs, images) as static assets
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+// Serve the built Vite frontend
+app.use(express.static(path.join(__dirname, '../client/dist')));
+
+
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_for_local_dev';
 const APP_PASSWORD = process.env.APP_PASSWORD || 'password123';
@@ -841,6 +845,12 @@ app.post('/api/admin/migrate-to-firestore', async (req, res) => {
 });
 
 // Export for Firebase Cloud Functions v2
+
+// Catch-all to serve index.html for React SPA
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+});
+
 export const api = onRequest({ cors: true, maxInstances: 10 }, app);
 
 // Start server locally if run directly
