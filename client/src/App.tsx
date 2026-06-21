@@ -145,6 +145,8 @@ const PrintSeparator = ({ number, title }: { number: number | string; title: str
 function App() {
   const [activeTab, setActiveTab] = useState<string>('setup');
   const [isObeMenuOpen, setIsObeMenuOpen] = useState<boolean>(true);
+  const [isCourseworkMenuOpen, setIsCourseworkMenuOpen] = useState<boolean>(true);
+  const [isExamMenuOpen, setIsExamMenuOpen] = useState<boolean>(true);
   const [courses, setCourses] = useState<CourseInfo[]>([]);
   const [activeCourseId, setActiveCourseId] = useState<number | null>(null);
   const [courseInfo, setCourseInfo] = useState<CourseInfo | null>(null);
@@ -967,7 +969,11 @@ function App() {
         return <CourseworkDocs courseInfo={courseInfo} onRefresh={refreshAll} API_BASE={API_BASE} activeCourseId={activeCourseId} programName={programName} />;
       case 'final_exam_docs':
         return <FinalExamDocs courseInfo={courseInfo} onRefresh={refreshAll} API_BASE={API_BASE} activeCourseId={activeCourseId} programName={programName} />;
-      case 'portfolio':
+      case 'coursework_samples':
+          return <CoursePortfolio courseInfo={courseInfo} onRefresh={refreshAll} API_BASE={API_BASE} activeCourseId={activeCourseId} students={students} printMode="coursework" />;
+        case 'exam_scripts':
+          return <CoursePortfolio courseInfo={courseInfo} onRefresh={refreshAll} API_BASE={API_BASE} activeCourseId={activeCourseId} students={students} printMode="exam" />;
+        case 'portfolio':
         return <CoursePortfolio courseInfo={courseInfo} onRefresh={refreshAll} API_BASE={API_BASE} activeCourseId={activeCourseId} students={students} />;
       default:
         return <Dashboard API_BASE={API_BASE} gradesData={gradesData} obeMetrics={obeMetrics} courseInfo={courseInfo} />;
@@ -1056,14 +1062,48 @@ function App() {
             </div>
           </li>
           <li>
-            <div className={`nav-item ${activeTab === 'coursework_docs' ? 'active' : ''}`} onClick={() => setActiveTab('coursework_docs')}>
-              <span className="nav-icon">📑</span> Coursework Docs
+            <div className={`nav-item ${(activeTab === 'coursework_docs' || activeTab === 'coursework_samples') ? 'active' : ''}`} onClick={() => { setActiveTab('coursework_docs'); setIsCourseworkMenuOpen(!isCourseworkMenuOpen); }} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <span className="nav-icon">📑</span> Coursework Docs
+              </div>
+              <span style={{ fontSize: '0.8rem', opacity: 0.5, transform: isCourseworkMenuOpen ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }}>▶</span>
             </div>
+            {isCourseworkMenuOpen && (
+              <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+                <li>
+                  <div className={`nav-item ${activeTab === 'coursework_docs' ? 'active' : ''}`} onClick={() => setActiveTab('coursework_docs')} style={{ paddingLeft: '42px', fontSize: '0.78rem', minHeight: '34px', opacity: 0.85 }}>
+                    <span className="nav-icon" style={{ fontSize: '0.8rem' }}>↳</span> Coursework Docs
+                  </div>
+                </li>
+                <li>
+                  <div className={`nav-item ${activeTab === 'coursework_samples' ? 'active' : ''}`} onClick={() => setActiveTab('coursework_samples')} style={{ paddingLeft: '42px', fontSize: '0.78rem', minHeight: '34px', opacity: 0.85 }}>
+                    <span className="nav-icon" style={{ fontSize: '0.8rem' }}>↳</span> Coursework Samples
+                  </div>
+                </li>
+              </ul>
+            )}
           </li>
           <li>
-            <div className={`nav-item ${activeTab === 'final_exam_docs' ? 'active' : ''}`} onClick={() => setActiveTab('final_exam_docs')}>
-              <span className="nav-icon">📄</span> Examination Docs
+            <div className={`nav-item ${(activeTab === 'final_exam_docs' || activeTab === 'exam_scripts') ? 'active' : ''}`} onClick={() => { setActiveTab('final_exam_docs'); setIsExamMenuOpen(!isExamMenuOpen); }} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <span className="nav-icon">📄</span> Examination Docs
+              </div>
+              <span style={{ fontSize: '0.8rem', opacity: 0.5, transform: isExamMenuOpen ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }}>▶</span>
             </div>
+            {isExamMenuOpen && (
+              <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+                <li>
+                  <div className={`nav-item ${activeTab === 'final_exam_docs' ? 'active' : ''}`} onClick={() => setActiveTab('final_exam_docs')} style={{ paddingLeft: '42px', fontSize: '0.78rem', minHeight: '34px', opacity: 0.85 }}>
+                    <span className="nav-icon" style={{ fontSize: '0.8rem' }}>↳</span> Examination Docs
+                  </div>
+                </li>
+                <li>
+                  <div className={`nav-item ${activeTab === 'exam_scripts' ? 'active' : ''}`} onClick={() => setActiveTab('exam_scripts')} style={{ paddingLeft: '42px', fontSize: '0.78rem', minHeight: '34px', opacity: 0.85 }}>
+                    <span className="nav-icon" style={{ fontSize: '0.8rem' }}>↳</span> Examination Scripts
+                  </div>
+                </li>
+              </ul>
+            )}
           </li>
           <li>
             <div className={`nav-item ${activeTab === 'portfolio' ? 'active' : ''}`} onClick={() => setActiveTab('portfolio')}>
