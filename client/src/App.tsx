@@ -335,21 +335,25 @@ function App() {
     const fullAttendancePdfUrls = attendancePdfUrls.map(url => `${serverUrl}${url}`);
 
     const tabDefs = [
-      { icon: '📄', label: 'Cover Page' },
-      { icon: '📄', label: '1. Details of Students\' Results' },
-      { icon: '📄', label: '2. OBE Assessment' },
-      { icon: '📄', label: '3. Course Syllabus' },
-      { icon: '📄', label: '4. Teaching Plan' },
-      { icon: '📄', label: '5. Time-Table of Lecturer' },
-      { icon: '📄', label: '6. Student Monthly Attendance' },
-      { icon: '📄', label: '7. Report by Lecturer' },
-      { icon: '📄', label: '8. Teaching Materials' },
-      { icon: '📄', label: '9. Moderated Final Exam' },
-      { icon: '📄', label: '10. Final Exam Scripts' },
-      { icon: '📄', label: '11. Coursework & Marking' },
-      { icon: '📄', label: '12. Samples of Coursework' },
-      { icon: '📄', label: '13. Miscellaneous Records' }
-    ];
+        { id: 'dashboard', icon: 'dY",', label: 'Cover Page' },
+        { id: 'assessments', icon: 'dY",', label: '2.1 Table of Specification' },
+        { id: 'clo', icon: 'dY",', label: '2.2 CLO Analysis' },
+        { id: 'plo', icon: 'dY",', label: '2.3 PLO Analysis' },
+        { id: 'student_clo', icon: 'dY",', label: '2.4 Student CLO' },
+        { id: 'student_plo', icon: 'dY",', label: '2.5 Student PLO' },
+        { id: 'cqi', icon: 'dY",', label: '2.6 CQI Report' },
+        { id: 'syllabus', icon: 'dY",', label: '3. Course Syllabus' },
+        { id: 'teaching_plan', icon: 'dY",', label: '4. Teaching Plan' },
+        { id: 'time_table', icon: 'dY",', label: '5. Time-Table of Lecturer' },
+        { id: 'attendance', icon: 'dY",', label: '6. Student Monthly Attendance' },
+        { id: 'reports', icon: 'dY",', label: '7. Report by Lecturer' },
+        { id: 'teaching_materials', icon: 'dY",', label: '8. Teaching Materials' },
+        { id: 'final_exam_docs', icon: 'dY",', label: '9. Examination Docs' },
+        { id: 'exam_scripts', icon: 'dY",', label: '10. Examination Scripts' },
+        { id: 'coursework_docs', icon: 'dY",', label: '11. Coursework Docs' },
+        { id: 'coursework_samples', icon: 'dY",', label: '12. Coursework Samples' },
+        { id: 'misc_record', icon: 'dY",', label: '13. Miscellaneous Records' }
+      ];
 
     const courseCode = courseInfo?.course_code || 'COURSE';
     const courseName = courseInfo?.course_name || '';
@@ -1315,6 +1319,7 @@ function App() {
           }
         `}</style>
 
+        
         {/* Document separator label */}
         <div style={{ display: 'none' }}>Print All: {courseInfo?.course_code}</div>
 
@@ -1328,14 +1333,8 @@ function App() {
           />
         </div>
 
-        {/* 1. Final Result */}
-        <PrintSeparator number={1} title={"Final Result"} />
-        <div className="print-all-section">
-          <FinalResultDocs courseInfo={courseInfo} onRefresh={() => {}} API_BASE={API_BASE} activeCourseId={activeCourseId} programName={programName} />
-        </div>
-
-        {/* 2. Table of Specification */}
-        <PrintSeparator number={2} title={"Table of Specification"} />
+        {/* 2.1 Table of Specification */}
+        <PrintSeparator number={2.1} title={"Table of Specification"} />
         <div className="print-all-section">
           <PrintHeader title="Table of Specification" courseInfo={courseInfo} programName={programName} />
           <AssessmentSetup
@@ -1351,16 +1350,17 @@ function App() {
           />
         </div>
 
-        {/* 3. OBE Assessment */}
-        <PrintSeparator number={3} title={"OBE Assessment"} />
+        {/* 2.2 CLO Analysis */}
+        <PrintSeparator number={2.2} title={"CLO Analysis"} />
         <div className="print-all-section">
-          <PrintHeader title="OBE Assessment" courseInfo={courseInfo} programName={programName} />
+          <PrintHeader title="CLO Analysis" courseInfo={courseInfo} programName={programName} />
           <ObeDashboard
             assessments={assessments}
             optionalGroups={optionalGroups}
             obeMetrics={obeMetrics}
             gradesData={gradesData}
             isPrintMode={true}
+            printSection="clo"
             courseInfo={courseInfo}
             API_BASE={API_BASE}
             activeCourseId={activeCourseId}
@@ -1368,8 +1368,79 @@ function App() {
           />
         </div>
 
-        {/* 4. Course Syllabus */}
-        <PrintSeparator number={4} title={"Course Syllabus"} />
+        {/* 2.3 PLO Analysis */}
+        <PrintSeparator number={2.3} title={"PLO Analysis"} />
+        <div className="print-all-section">
+          <PrintHeader title="PLO Analysis" courseInfo={courseInfo} programName={programName} />
+          <ObeDashboard
+            assessments={assessments}
+            optionalGroups={optionalGroups}
+            obeMetrics={obeMetrics}
+            gradesData={gradesData}
+            isPrintMode={true}
+            printSection="plo"
+            courseInfo={courseInfo}
+            API_BASE={API_BASE}
+            activeCourseId={activeCourseId}
+            onRefresh={() => {}}
+          />
+        </div>
+
+        {/* 2.4 Student CLO */}
+        <PrintSeparator number={2.4} title={"Student CLO Breakdown"} />
+        <div className="print-all-section">
+          <PrintHeader title="Student CLO Breakdown" courseInfo={courseInfo} programName={programName} />
+          <ObeDashboard
+            assessments={assessments}
+            optionalGroups={optionalGroups}
+            obeMetrics={obeMetrics}
+            gradesData={gradesData}
+            isPrintMode={true}
+            printSection="student-clo"
+            courseInfo={courseInfo}
+            API_BASE={API_BASE}
+            activeCourseId={activeCourseId}
+            onRefresh={() => {}}
+          />
+        </div>
+
+        {/* 2.5 Student PLO */}
+        <PrintSeparator number={2.5} title={"Student PLO Breakdown"} />
+        <div className="print-all-section">
+          <PrintHeader title="Student PLO Breakdown" courseInfo={courseInfo} programName={programName} />
+          <ObeDashboard
+            assessments={assessments}
+            optionalGroups={optionalGroups}
+            obeMetrics={obeMetrics}
+            gradesData={gradesData}
+            isPrintMode={true}
+            printSection="student-plo"
+            courseInfo={courseInfo}
+            API_BASE={API_BASE}
+            activeCourseId={activeCourseId}
+            onRefresh={() => {}}
+          />
+        </div>
+
+        {/* 2.6 CQI Report */}
+        <PrintSeparator number={2.6} title={"CQI Report"} />
+        <div className="print-all-section">
+          <ObeDashboard
+            assessments={assessments}
+            optionalGroups={optionalGroups}
+            obeMetrics={obeMetrics}
+            gradesData={gradesData}
+            isPrintMode={true}
+            printSection="cqi"
+            courseInfo={courseInfo}
+            API_BASE={API_BASE}
+            activeCourseId={activeCourseId}
+            onRefresh={() => {}}
+          />
+        </div>
+
+        {/* 3. Course Syllabus */}
+        <PrintSeparator number={3} title={"Course Syllabus"} />
         <div className="print-all-section">
           <PrintHeader title="Syllabus Outline" courseInfo={courseInfo} programName={programName} />
           <SyllabusSetup
@@ -1383,8 +1454,8 @@ function App() {
           />
         </div>
 
-        {/* 5. Teaching Plan */}
-        <PrintSeparator number={5} title={"Teaching Plan"} />
+        {/* 4. Teaching Plan */}
+        <PrintSeparator number={4} title={"Teaching Plan"} />
         <div className="print-all-section">
           <PrintHeader title="Teaching Plan" courseInfo={courseInfo} programName={programName} />
           <TeachingPlan
@@ -1401,15 +1472,15 @@ function App() {
           />
         </div>
 
-        {/* 6. Lecturer Timetable */}
-        <PrintSeparator number={6} title={"Time-Table of Lecturer"} />
+        {/* 5. Lecturer Timetable */}
+        <PrintSeparator number={5} title={"Time-Table of Lecturer"} />
         <div className="print-all-section">
           <PrintHeader title="Lecturer Timetable" courseInfo={courseInfo} programName={programName} />
           <LecturerTimetable courseInfo={courseInfo} onRefresh={() => {}} API_BASE={API_BASE} activeCourseId={activeCourseId} programName={programName} hidePrintHeader={true} />
         </div>
 
-        {/* 7. Student Monthly Attendance */}
-        <PrintSeparator number={7} title={"Student Monthly Attendance"} />
+        {/* 6. Student Monthly Attendance */}
+        <PrintSeparator number={6} title={"Student Monthly Attendance"} />
         <div className="print-all-section">
           <PrintHeader title="Student Monthly Attendance" courseInfo={courseInfo} programName={programName} />
           <AttendanceRegistry
@@ -1422,8 +1493,8 @@ function App() {
           />
         </div>
 
-        {/* 8. Report by Lecturer */}
-        <PrintSeparator number={8} title={"Report by Lecturer"} />
+        {/* 7. Report by Lecturer */}
+        <PrintSeparator number={7} title={"Report by Lecturer"} />
         <div className="print-all-section">
           <PrintHeader title="Weekly Reports (KLUST F28)" courseInfo={courseInfo} programName={programName} />
           <LecturerReport
@@ -1435,8 +1506,8 @@ function App() {
           />
         </div>
 
-        {/* 9. Teaching Materials */}
-        <PrintSeparator number={9} title={"Teaching Materials"} />
+        {/* 8. Teaching Materials */}
+        <PrintSeparator number={8} title={"Teaching Materials"} />
         <div className="print-all-section">
           <PrintHeader title="Teaching Materials" courseInfo={courseInfo} programName={programName} />
           <TeachingMaterials
@@ -1447,39 +1518,39 @@ function App() {
           />
         </div>
 
-        {/* 10. Moderated Final Exam */}
-        <PrintSeparator number={10} title={"Moderated Final Exam"} />
+        {/* 9. Moderated Final Exam */}
+        <PrintSeparator number={9} title={"Moderated Final Exam"} />
         <div className="print-all-section">
           <FinalExamDocs courseInfo={courseInfo} onRefresh={() => {}} API_BASE={API_BASE} activeCourseId={activeCourseId} programName={programName} />
         </div>
 
-        {/* 11. Final Exam Scripts */}
-        <PrintSeparator number={11} title={"Final Exam Scripts"} />
+        {/* 10. Final Exam Scripts */}
+        <PrintSeparator number={10} title={"Final Exam Scripts"} />
         <div className="print-all-section">
           <PrintHeader title="Examination Script Samples Portfolio" courseInfo={courseInfo} programName={programName} />
           <CoursePortfolio courseInfo={courseInfo} onRefresh={() => {}} API_BASE={API_BASE} activeCourseId={activeCourseId} students={students} printMode="exam" isPrintMode={true} />
         </div>
 
-        {/* 12. Coursework Docs */}
-        <PrintSeparator number={12} title={"Coursework Docs"} />
+        {/* 11. Coursework Docs */}
+        <PrintSeparator number={11} title={"Coursework Docs"} />
         <div className="print-all-section">
           <CourseworkDocs courseInfo={courseInfo} onRefresh={() => {}} API_BASE={API_BASE} activeCourseId={activeCourseId} programName={programName} />
         </div>
 
-        {/* 13. Coursework Samples */}
-        <PrintSeparator number={13} title={"Samples of Student Coursework"} />
+        {/* 12. Coursework Samples */}
+        <PrintSeparator number={12} title={"Samples of Student Coursework"} />
         <div className="print-all-section">
           <PrintHeader title="Coursework Student Samples Portfolio" courseInfo={courseInfo} programName={programName} />
           <CoursePortfolio courseInfo={courseInfo} onRefresh={() => {}} API_BASE={API_BASE} activeCourseId={activeCourseId} students={students} printMode="coursework" isPrintMode={true} />
         </div>
 
-        {/* 14. Miscellaneous Records */}
-        <PrintSeparator number={14} title={"Miscellaneous Records"} />
+        {/* 13. Miscellaneous Records */}
+        <PrintSeparator number={13} title={"Miscellaneous Records"} />
         <div className="print-all-section">
           <PrintHeader title="Miscellaneous Records" courseInfo={courseInfo} programName={programName} />
           <MiscDocs courseInfo={courseInfo} onRefresh={() => {}} API_BASE={API_BASE} activeCourseId={activeCourseId} programName={programName} hidePrintHeader={true} />
         </div>
-      </div>
+</div>
     </>
     );
   }

@@ -13,9 +13,10 @@ type ObeDashboardProps = {
   activeCourseId?: number | null;
   onRefresh?: () => void;
   activeSubTab?: 'clo' | 'plo' | 'student-clo' | 'student-plo' | 'cqi';
+  printSection?: 'clo' | 'plo' | 'student-clo' | 'student-plo' | 'cqi';
 };
 
-export default function ObeDashboard({ assessments,  obeMetrics, gradesData, isPrintMode, courseInfo, API_BASE, activeCourseId, onRefresh, activeSubTab: externalSubTab }: ObeDashboardProps) {
+export default function ObeDashboard({ assessments,  obeMetrics, gradesData, isPrintMode, courseInfo, API_BASE, activeCourseId, onRefresh, activeSubTab: externalSubTab, printSection }: ObeDashboardProps) {
   const [internalSubTab, setInternalSubTab] = useState<'clo' | 'plo' | 'student-clo' | 'student-plo' | 'cqi'>('clo');
   const activeSubTab = externalSubTab || internalSubTab;
   const setActiveSubTab = setInternalSubTab;
@@ -743,24 +744,34 @@ export default function ObeDashboard({ assessments,  obeMetrics, gradesData, isP
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       {isPrintMode ? (
-        <>
-          {/* Print Mode: Render all tabs sequentially with page breaks */}
-          <div style={{ paddingBottom: '20px' }}>
-            {renderCloTable()}
-          </div>
-          <div style={{ pageBreakBefore: 'always', breakBefore: 'page', paddingTop: '20px' }}>
-            {renderPloTable()}
-          </div>
-          <div style={{ pageBreakBefore: 'always', breakBefore: 'page', paddingTop: '20px' }}>
-            {renderStudentClo()}
-          </div>
-          <div style={{ pageBreakBefore: 'always', breakBefore: 'page', paddingTop: '20px' }}>
-            {renderStudentPlo()}
-          </div>
-          <div style={{ pageBreakBefore: 'always', breakBefore: 'page', paddingTop: '20px' }}>
-            {renderCqiForm()}
-          </div>
-        </>
+        printSection ? (
+          <>
+            {printSection === 'clo' && <div style={{ paddingBottom: '20px' }}>{renderCloTable()}</div>}
+            {printSection === 'plo' && <div style={{ paddingBottom: '20px' }}>{renderPloTable()}</div>}
+            {printSection === 'student-clo' && <div style={{ paddingBottom: '20px' }}>{renderStudentClo()}</div>}
+            {printSection === 'student-plo' && <div style={{ paddingBottom: '20px' }}>{renderStudentPlo()}</div>}
+            {printSection === 'cqi' && <div style={{ paddingBottom: '20px' }}>{renderCqiForm()}</div>}
+          </>
+        ) : (
+          <>
+            {/* Print Mode: Render all tabs sequentially with page breaks */}
+            <div style={{ paddingBottom: '20px' }}>
+              {renderCloTable()}
+            </div>
+            <div style={{ pageBreakBefore: 'always', breakBefore: 'page', paddingTop: '20px' }}>
+              {renderPloTable()}
+            </div>
+            <div style={{ pageBreakBefore: 'always', breakBefore: 'page', paddingTop: '20px' }}>
+              {renderStudentClo()}
+            </div>
+            <div style={{ pageBreakBefore: 'always', breakBefore: 'page', paddingTop: '20px' }}>
+              {renderStudentPlo()}
+            </div>
+            <div style={{ pageBreakBefore: 'always', breakBefore: 'page', paddingTop: '20px' }}>
+              {renderCqiForm()}
+            </div>
+          </>
+        )
       ) : (
         <>
           {/* Screen Mode: Sub tabs nav */}
