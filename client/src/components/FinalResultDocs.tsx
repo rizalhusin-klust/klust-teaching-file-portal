@@ -144,10 +144,10 @@ export default function FinalResultDocs({ courseInfo, onRefresh, API_BASE, activ
     let fullUrl = '';
 
     if (item && item.type === 'file' && item.value) {
-      const rawPath = item.value;
+      const rawPath = item.value || '';
+      fullUrl = rawPath.startsWith('/') ? `${(API_BASE || '').replace('/api', '')}${rawPath}` : rawPath;
       const cleanPath = rawPath.replace(/\\/g, '/');
-      const filename = cleanPath.split('/').pop();
-      fullUrl = `${API_BASE}/uploads/${filename}`;
+      const filename = cleanPath.split('/').pop() || 'Uploaded File';
       
       const lower = filename?.toLowerCase() || '';
       if (lower.endsWith('.pdf')) isPdf = true;
@@ -342,9 +342,9 @@ export default function FinalResultDocs({ courseInfo, onRefresh, API_BASE, activ
                     displayName = row.item.value || '';
                   } else if (row.item.type === 'file') {
                     const rawPath = row.item.value || '';
-                    const cleanPath = rawPath.replace(/\\/g, '/');
-                    const filename = cleanPath.split('/').pop() || '';
-                    url = `${API_BASE}/uploads/${filename}`;
+                      url = rawPath.startsWith('/') ? `${(API_BASE || '').replace('/api', '')}${rawPath}` : rawPath;
+                      const cleanPath = rawPath.replace(/\\/g, '/');
+                      const filename = cleanPath.split('/').pop() || '';
                     displayName = row.item.name || filename || 'Uploaded File';
                   }
                 }

@@ -414,9 +414,9 @@ export default function CourseworkDocs({ courseInfo, onRefresh, API_BASE, active
                   displayName = row.item.value || '';
                 } else if (row.item.type === 'file') {
                   const rawPath = row.item.value || '';
-                  const cleanPath = rawPath.replace(/\\/g, '/');
-                  const filename = cleanPath.split('/').pop() || '';
-                  url = `${API_BASE}/uploads/${filename}`;
+                      url = rawPath.startsWith('/') ? `${(API_BASE || '').replace('/api', '')}${rawPath}` : rawPath;
+                      const cleanPath = rawPath.replace(/\\/g, '/');
+                      const filename = cleanPath.split('/').pop() || '';
                   displayName = row.item.name || filename || 'Uploaded File';
                 }
               }
