@@ -145,6 +145,7 @@ const PrintSeparator = ({ number, title }: { number: number | string; title: str
 function App() {
   const [activeTab, setActiveTab] = useState<string>('setup');
   const [isObeMenuOpen, setIsObeMenuOpen] = useState<boolean>(true);
+  const [isPlanMenuOpen, setIsPlanMenuOpen] = useState<boolean>(true);
   const [isCourseworkMenuOpen, setIsCourseworkMenuOpen] = useState<boolean>(true);
   const [isExamMenuOpen, setIsExamMenuOpen] = useState<boolean>(true);
   const [courses, setCourses] = useState<CourseInfo[]>([]);
@@ -1014,9 +1015,31 @@ function App() {
             </div>
           </li>
           <li>
-            <div className={`nav-item ${activeTab === 'teaching_plan' ? 'active' : ''}`} onClick={() => setActiveTab('teaching_plan')}>
-              <span className="nav-icon">📋</span> Teaching Plan
+            <div className={`nav-item ${(activeTab === 'teaching_plan' || activeTab === 'time_table' || activeTab === 'attendance') ? 'active' : ''}`} onClick={() => { setActiveTab('teaching_plan'); setIsPlanMenuOpen(!isPlanMenuOpen); }} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <span className="nav-icon">🗓️</span> Teaching Plan
+              </div>
+              <span style={{ fontSize: '0.8rem', opacity: 0.5, transform: isPlanMenuOpen ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }}>▶</span>
             </div>
+            {isPlanMenuOpen && (
+              <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+                <li>
+                  <div className={`nav-item ${activeTab === 'teaching_plan' ? 'active' : ''}`} onClick={() => setActiveTab('teaching_plan')} style={{ paddingLeft: '42px', fontSize: '0.78rem', minHeight: '34px', opacity: 0.85 }}>
+                    <span className="nav-icon" style={{ fontSize: '0.8rem' }}>↳</span> Teaching Plan
+                  </div>
+                </li>
+                <li>
+                  <div className={`nav-item ${activeTab === 'time_table' ? 'active' : ''}`} onClick={() => setActiveTab('time_table')} style={{ paddingLeft: '42px', fontSize: '0.78rem', minHeight: '34px', opacity: 0.85 }}>
+                    <span className="nav-icon" style={{ fontSize: '0.8rem' }}>↳</span> Lecturer Timetable
+                  </div>
+                </li>
+                <li>
+                  <div className={`nav-item ${activeTab === 'attendance' ? 'active' : ''}`} onClick={() => setActiveTab('attendance')} style={{ paddingLeft: '42px', fontSize: '0.78rem', minHeight: '34px', opacity: 0.85 }}>
+                    <span className="nav-icon" style={{ fontSize: '0.8rem' }}>↳</span> Student Monthly Attendance
+                  </div>
+                </li>
+              </ul>
+            )}
           </li>
           <li>
             <div className={`nav-item ${activeTab === 'teaching_materials' ? 'active' : ''}`} onClick={() => setActiveTab('teaching_materials')}>
@@ -1050,11 +1073,6 @@ function App() {
                 </li>
               </ul>
             )}
-          </li>
-          <li>
-            <div className={`nav-item ${activeTab === 'attendance' ? 'active' : ''}`} onClick={() => setActiveTab('attendance')}>
-              <span className="nav-icon">📅</span> Attendance
-            </div>
           </li>
           <li>
             <div className={`nav-item ${activeTab === 'reports' ? 'active' : ''}`} onClick={() => setActiveTab('reports')}>
