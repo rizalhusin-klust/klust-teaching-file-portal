@@ -69,6 +69,76 @@ export default function MarksGrid({ students, assessments, marks, gradesData, on
     groupedAssessments[a.title].push(a);
   });
 
+  const flatAssessments = Object.keys(groupedAssessments).flatMap(title => groupedAssessments[title]);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, rowIndex: number, colIndex: number) => {
+    let nextRow = rowIndex;
+    let nextCol = colIndex;
+
+    switch (e.key) {
+      case 'ArrowUp':
+        nextRow = Math.max(0, rowIndex - 1);
+        break;
+      case 'ArrowDown':
+        nextRow = Math.min(students.length - 1, rowIndex + 1);
+        break;
+      case 'ArrowLeft':
+        if ((e.target as HTMLInputElement).selectionStart !== 0) return;
+        nextCol = Math.max(0, colIndex - 1);
+        break;
+      case 'ArrowRight':
+        if ((e.target as HTMLInputElement).selectionEnd !== (e.target as HTMLInputElement).value.length) return;
+        nextCol = Math.min(flatAssessments.length - 1, colIndex + 1);
+        break;
+      default:
+        return;
+    }
+
+    if (nextRow !== rowIndex || nextCol !== colIndex) {
+      e.preventDefault();
+      const nextInput = document.getElementById(`input-mark-${nextRow}-${nextCol}`) as HTMLInputElement;
+      if (nextInput) {
+        nextInput.focus();
+        nextInput.select();
+      }
+    }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>, startRowIndex: number, startColIndex: number) => {
+    e.preventDefault();
+    const pasteData = e.clipboardData.getData('text/plain');
+    if (!pasteData) return;
+
+    const rows = pasteData.split(/\r?\n/);
+    rows.forEach((row, rOffset) => {
+      if (!row.trim()) return;
+      const cols = row.split(/\t/);
+      cols.forEach((val, cOffset) => {
+        const targetRow = startRowIndex + rOffset;
+        const targetCol = startColIndex + cOffset;
+        
+        if (targetRow < students.length && targetCol < flatAssessments.length) {
+          const studentId = students[targetRow].matric_id;
+          const assessmentId = flatAssessments[targetCol].id;
+          const maxMark = flatAssessments[targetCol].max_mark;
+          
+          let cleanedVal = val.trim();
+          if (cleanedVal === '') return;
+          
+          const numVal = parseFloat(cleanedVal);
+          if (!isNaN(numVal)) {
+            const cappedVal = numVal < 0 ? 0 : (numVal > maxMark ? maxMark : numVal);
+            setLocalMarks(prev => ({
+              ...prev,
+              [`${studentId}_${assessmentId}`]: String(cappedVal)
+            }));
+            onUpdateMark(studentId, assessmentId, cappedVal);
+          }
+        }
+      });
+    });
+  };
+
   return (
     <div className="view-card" style={{ padding: '20px 15px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
@@ -121,7 +191,7 @@ export default function MarksGrid({ students, assessments, marks, gradesData, on
             </tr>
           </thead>
           <tbody>
-            {students.map(student => {
+            {students.map((student, rowIndex) => {
               const studentGrade = gradesData.find(g => g.matric_id === student.matric_id) || {};
               const sTotalCW = studentGrade.totalCW !== undefined ? studentGrade.totalCW : 0;
               const sTotalE = studentGrade.totalE !== undefined ? studentGrade.totalE : 0;
@@ -135,33 +205,34 @@ export default function MarksGrid({ students, assessments, marks, gradesData, on
                   <td className="col-name" style={{ fontSize: '0.8rem' }}>{student.name}</td>
 
                   {/* Mark Cells */}
-                  {Object.keys(groupedAssessments).map(title => 
-                    groupedAssessments[title].map(a => {
-                      const inputKey = `${student.matric_id}_${a.id}`;
-                      const currentVal = localMarks[inputKey] || '';
-                      
-                      return (
-                        <td key={a.id} style={{ padding: 0 }}>
-                          <input
-                            type="text"
-                            value={currentVal}
-                            onChange={e => handleInputChange(student.matric_id, a.id, e.target.value)}
-                            onBlur={() => handleBlur(student.matric_id, a.id, a.max_mark, currentVal)}
-                            placeholder="-"
-                            style={{
-                              width: '100%',
-                              height: '100%',
-                              padding: '8px 4px',
-                              backgroundColor: 'transparent',
-                              border: 'none',
-                              color: 'var(--text-active)',
-                              fontSize: '0.825rem'
-                            }}
-                          />
-                        </td>
-                      );
-                    })
-                  )}
+                  {flatAssessments.map((a, colIndex) => {
+                    const inputKey = `${student.matric_id}_${a.id}`;
+                    const currentVal = localMarks[inputKey] || '';
+                    
+                    return (
+                      <td key={a.id} style={{ padding: 0 }}>
+                        <input
+                          id={`input-mark-${rowIndex}-${colIndex}`}
+                          type="text"
+                          value={currentVal}
+                          onChange={e => handleInputChange(student.matric_id, a.id, e.target.value)}
+                          onBlur={() => handleBlur(student.matric_id, a.id, a.max_mark, currentVal)}
+                          onKeyDown={e => handleKeyDown(e, rowIndex, colIndex)}
+                          onPaste={e => handlePaste(e, rowIndex, colIndex)}
+                          placeholder="-"
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            padding: '8px 4px',
+                            backgroundColor: 'transparent',
+                            border: 'none',
+                            color: 'var(--text-active)',
+                            fontSize: '0.825rem'
+                          }}
+                        />
+                      </td>
+                    );
+                  })}
 
                   {/* Summary Cells */}
                   <td style={{ background: 'rgba(255, 255, 255, 0.01)', borderLeft: '2px solid var(--primary)', fontWeight: 500 }}>
