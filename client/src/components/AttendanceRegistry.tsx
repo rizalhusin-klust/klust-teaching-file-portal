@@ -352,7 +352,7 @@ export default function AttendanceRegistry({ students, attendance, onUpdateAtten
           <h3 className="no-print" style={{ fontWeight: 600, fontSize: '1rem', color: 'var(--text-active)', marginBottom: '16px' }}>
             📅 Student Monthly Attendance PDFs (Up to 5)
           </h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
+          <div className="no-print" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
             {[1, 2, 3, 4, 5].map(i => {
               const key = `attendance_pdf_${i}`;
               const pdf = pdfs[key];
@@ -419,12 +419,20 @@ export default function AttendanceRegistry({ students, attendance, onUpdateAtten
                       </div>
                     )}
                   </div>
-                  {/* Hyperlink for Print Mode */}
-                  {pdf && (
-                    <div className="print-link-only" style={{ marginTop: '10px' }}>
-                      📄 <strong>Attendance Month {i}:</strong> <a href={pdf.url} style={{ color: 'blue', textDecoration: 'underline' }}>{pdf.url}</a>
-                    </div>
-                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Print UI: Render links in rows outside the grid */}
+          <div className="only-print" style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '16px' }}>
+            {[1, 2, 3, 4, 5].map(i => {
+              const key = `attendance_pdf_${i}`;
+              const pdf = pdfs[key];
+              if (!pdf) return null;
+              return (
+                <div key={`print-link-${key}`} style={{ fontSize: '0.9rem' }}>
+                  📄 <strong>Attendance Month {i}:</strong> <a href={pdf.url} style={{ color: 'blue', textDecoration: 'underline' }}>{pdf.url}</a>
                 </div>
               );
             })}
