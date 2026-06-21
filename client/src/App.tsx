@@ -1239,8 +1239,7 @@ function App() {
         {/* Document separator label */}
         <div style={{ display: 'none' }}>Print All: {courseInfo?.course_code}</div>
 
-
-        {/* ===== SECTION 0: COVER PAGE (DASHBOARD) ===== */}
+        {/* Cover Page */}
         <div className="print-all-section">
           <Dashboard
             API_BASE={API_BASE}
@@ -1250,7 +1249,10 @@ function App() {
           />
         </div>
 
-        {/* ===== SECTION 1: TABLE OF SPECIFICATION ===== */}
+        <div className="print-all-section" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', textAlign: 'center' }}>
+          <h1 style={{ fontSize: '6rem', color: '#1e3a8a', marginBottom: '1rem' }}>1</h1>
+          <h2 style={{ fontSize: '3rem', color: '#334155', textTransform: 'uppercase' }}>Details of Students' Results</h2>
+        </div>
         <div className="print-all-section">
           <PrintHeader title="Table of Specification" courseInfo={courseInfo} programName={programName} />
           <AssessmentSetup
@@ -1263,11 +1265,13 @@ function App() {
             activeCourseId={activeCourseId}
             plannedAssessments={plannedAssessments}
             courseInfo={courseInfo}
-
           />
         </div>
 
-        {/* ===== SECTION 2: OBE CLO/PLO DASHBOARD ===== */}
+        <div className="print-all-section" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', textAlign: 'center' }}>
+          <h1 style={{ fontSize: '6rem', color: '#1e3a8a', marginBottom: '1rem' }}>2</h1>
+          <h2 style={{ fontSize: '3rem', color: '#334155', textTransform: 'uppercase' }}>OBE Assessment</h2>
+        </div>
         <div className="print-all-section">
           <PrintHeader title="OBE CLO / PLO Achievement" courseInfo={courseInfo} programName={programName} />
           <ObeDashboard
@@ -1283,7 +1287,10 @@ function App() {
           />
         </div>
 
-        {/* ===== SECTION 3: SYLLABUS OUTLINE ===== */}
+        <div className="print-all-section" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', textAlign: 'center' }}>
+          <h1 style={{ fontSize: '6rem', color: '#1e3a8a', marginBottom: '1rem' }}>3</h1>
+          <h2 style={{ fontSize: '3rem', color: '#334155', textTransform: 'uppercase' }}>Course Syllabus</h2>
+        </div>
         <div className="print-all-section">
           <PrintHeader title="Syllabus Outline" courseInfo={courseInfo} programName={programName} />
           <SyllabusSetup
@@ -1297,7 +1304,10 @@ function App() {
           />
         </div>
 
-        {/* ===== SECTION 4: TEACHING PLAN ===== */}
+        <div className="print-all-section" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', textAlign: 'center' }}>
+          <h1 style={{ fontSize: '6rem', color: '#1e3a8a', marginBottom: '1rem' }}>4</h1>
+          <h2 style={{ fontSize: '3rem', color: '#334155', textTransform: 'uppercase' }}>Teaching Plan</h2>
+        </div>
         <div className="print-all-section">
           <PrintHeader title="Teaching Plan" courseInfo={courseInfo} programName={programName} />
           <TeachingPlan
@@ -1314,18 +1324,15 @@ function App() {
           />
         </div>
 
-        {/* ===== SECTION 5: TEACHING MATERIALS ===== */}
-        <div className="print-all-section">
-          <PrintHeader title="Teaching Materials" courseInfo={courseInfo} programName={programName} />
-          <TeachingMaterials
-            courseInfo={courseInfo}
-            onRefresh={() => {}}
-            API_BASE={API_BASE}
-            activeCourseId={activeCourseId}
-          />
+        <div className="print-all-section" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', textAlign: 'center' }}>
+          <h1 style={{ fontSize: '6rem', color: '#1e3a8a', marginBottom: '1rem' }}>5</h1>
+          <h2 style={{ fontSize: '3rem', color: '#334155', textTransform: 'uppercase' }}>Time-Table of Lecturer</h2>
         </div>
 
-        {/* ===== SECTION 6: STUDENT MONTHLY ATTENDANCE ===== */}
+        <div className="print-all-section" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', textAlign: 'center' }}>
+          <h1 style={{ fontSize: '6rem', color: '#1e3a8a', marginBottom: '1rem' }}>6</h1>
+          <h2 style={{ fontSize: '3rem', color: '#334155', textTransform: 'uppercase' }}>Student Monthly Attendance</h2>
+        </div>
         <div className="print-all-section">
           <PrintHeader title="Student Monthly Attendance" courseInfo={courseInfo} programName={programName} />
           <AttendanceRegistry
@@ -1338,7 +1345,10 @@ function App() {
           />
         </div>
 
-        {/* ===== SECTION 7: WEEKLY REPORTS (KLUST F28) ===== */}
+        <div className="print-all-section" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', textAlign: 'center' }}>
+          <h1 style={{ fontSize: '6rem', color: '#1e3a8a', marginBottom: '1rem' }}>7</h1>
+          <h2 style={{ fontSize: '3rem', color: '#334155', textTransform: 'uppercase' }}>Report by Lecturer</h2>
+        </div>
         <div className="print-all-section">
           <PrintHeader title="Weekly Reports (KLUST F28)" courseInfo={courseInfo} programName={programName} />
           <LecturerReport
@@ -1350,18 +1360,24 @@ function App() {
           />
         </div>
 
-        {/* ===== SECTION 8: COURSEWORK DOCS ===== */}
+        <div className="print-all-section" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', textAlign: 'center' }}>
+          <h1 style={{ fontSize: '6rem', color: '#1e3a8a', marginBottom: '1rem' }}>8</h1>
+          <h2 style={{ fontSize: '3rem', color: '#334155', textTransform: 'uppercase' }}>Teaching Materials</h2>
+        </div>
         <div className="print-all-section">
-          <CourseworkDocs
+          <PrintHeader title="Teaching Materials" courseInfo={courseInfo} programName={programName} />
+          <TeachingMaterials
             courseInfo={courseInfo}
             onRefresh={() => {}}
             API_BASE={API_BASE}
             activeCourseId={activeCourseId}
-            programName={programName}
           />
         </div>
 
-        {/* ===== SECTION 9: EXAMINATION DOCS ===== */}
+        <div className="print-all-section" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', textAlign: 'center' }}>
+          <h1 style={{ fontSize: '6rem', color: '#1e3a8a', marginBottom: '1rem' }}>9</h1>
+          <h2 style={{ fontSize: '3rem', color: '#334155', textTransform: 'uppercase' }}>Moderated Final Exam with Marking Scheme</h2>
+        </div>
         <div className="print-all-section">
           <FinalExamDocs
             courseInfo={courseInfo}
@@ -1372,20 +1388,47 @@ function App() {
           />
         </div>
 
-        {/* ===== SECTION 10: COURSE PORTFOLIO ===== */}
-        <div className="print-all-section">
-          <PrintHeader title="Course Portfolio" courseInfo={courseInfo} programName={programName} />
-          <CoursePortfolio
-            courseInfo={courseInfo}
-            onRefresh={() => {}}
-            API_BASE={API_BASE}
-            activeCourseId={activeCourseId}
-            students={students}
-          />
+          <div className="print-all-section" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', textAlign: 'center' }}>
+            <h1 style={{ fontSize: '6rem', color: '#1e3a8a', marginBottom: '1rem' }}>10</h1>
+            <h2 style={{ fontSize: '3rem', color: '#334155', textTransform: 'uppercase' }}>Final Exam Scripts</h2>
+          </div>
+
+          <div className="print-all-section" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', textAlign: 'center' }}>
+            <h1 style={{ fontSize: '6rem', color: '#1e3a8a', marginBottom: '1rem' }}>11</h1>
+            <h2 style={{ fontSize: '3rem', color: '#334155', textTransform: 'uppercase' }}>Coursework with Marking Schemes</h2>
+          </div>
+          <div className="print-all-section">
+            <CourseworkDocs
+              courseInfo={courseInfo}
+              onRefresh={() => {}}
+              API_BASE={API_BASE}
+              activeCourseId={activeCourseId}
+              programName={programName}
+            />
+          </div>
+
+          <div className="print-all-section" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', textAlign: 'center' }}>
+            <h1 style={{ fontSize: '6rem', color: '#1e3a8a', marginBottom: '1rem' }}>12</h1>
+            <h2 style={{ fontSize: '3rem', color: '#334155', textTransform: 'uppercase' }}>Samples of Student Coursework</h2>
+          </div>
+
+          <div className="print-all-section" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', textAlign: 'center' }}>
+            <h1 style={{ fontSize: '6rem', color: '#1e3a8a', marginBottom: '1rem' }}>13</h1>
+            <h2 style={{ fontSize: '3rem', color: '#334155', textTransform: 'uppercase' }}>Miscellaneous Records</h2>
+          </div>
+          <div className="print-all-section">
+            <PrintHeader title="Course Portfolio" courseInfo={courseInfo} programName={programName} />
+            <CoursePortfolio
+              courseInfo={courseInfo}
+              onRefresh={() => {}}
+              API_BASE={API_BASE}
+              activeCourseId={activeCourseId}
+              students={students}
+            />
+          </div>
         </div>
-      </div>
-    </>
-  );
-}
+      </>
+    );
+  }
 
 export default App;
