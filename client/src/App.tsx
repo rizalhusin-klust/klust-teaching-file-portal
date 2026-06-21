@@ -1130,8 +1130,18 @@ function App() {
             )}
           </li>
           <li>
+            <div className={`nav-item ${activeTab === 'final_result' ? 'active' : ''}`} onClick={() => setActiveTab('final_result')}>
+              <span className="nav-icon">📊</span> Final Result
+            </div>
+          </li>
+          <li>
+            <div className={`nav-item ${activeTab === 'misc_record' ? 'active' : ''}`} onClick={() => setActiveTab('misc_record')}>
+              <span className="nav-icon">🗂️</span> Miscellaneous Record
+            </div>
+          </li>
+          <li>
             <div className={`nav-item ${activeTab === 'portfolio' ? 'active' : ''}`} onClick={() => setActiveTab('portfolio')}>
-              <span className="nav-icon">📂</span> Course Portfolio
+              <span className="nav-icon">📁</span> Course Portfolio
             </div>
           </li>
         </ul>
