@@ -11,6 +11,7 @@ type TeachingPlanProps = {
   clos: { clo_no: string; description: string }[];
   plos: { plo_no: string; description: string }[];
   plannedAssessments: PlannedAssessment[];
+  cloPloMappings: any[];
 };
 
 export default function TeachingPlan({
@@ -22,7 +23,8 @@ export default function TeachingPlan({
   students,
   clos,
   plos,
-  plannedAssessments
+  plannedAssessments,
+  cloPloMappings
 }: TeachingPlanProps) {
   const [localReports, setLocalReports] = useState<WeeklyReport[]>([]);
   const [referencesInput, setReferencesInput] = useState('');
@@ -200,12 +202,17 @@ export default function TeachingPlan({
               </tr>
             </thead>
             <tbody>
-              {plos.map(p => (
+              {plos.filter(p => cloPloMappings.some(m => m.plo_no === p.plo_no && m.is_mapped === 1)).map(p => (
                 <tr key={p.plo_no}>
                   <td style={{ fontWeight: 'bold', color: 'var(--info)', verticalAlign: 'top', width: '15%' }}>{p.plo_no}</td>
                   <td style={{ verticalAlign: 'top', width: '85%', whiteSpace: 'normal', fontSize: '0.875rem', lineHeight: '1.4' }}>{p.description}</td>
                 </tr>
               ))}
+              {plos.filter(p => cloPloMappings.some(m => m.plo_no === p.plo_no && m.is_mapped === 1)).length === 0 && (
+                <tr>
+                  <td colSpan={2} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>No PLOs mapped to CLOs.</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

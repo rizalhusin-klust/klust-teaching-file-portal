@@ -913,6 +913,7 @@ function App() {
             clos={clos}
             plos={plos}
             plannedAssessments={plannedAssessments}
+            cloPloMappings={cloPloMappings}
           />
         );
       case 'teaching_materials':
@@ -1303,6 +1304,7 @@ function App() {
             clos={clos}
             plos={plos}
             plannedAssessments={plannedAssessments}
+            cloPloMappings={cloPloMappings}
           />
         </div>
 
