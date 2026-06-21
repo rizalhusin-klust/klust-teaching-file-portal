@@ -306,33 +306,7 @@ function App() {
       return;
     }
 
-    // Get LMS result PDF path from course portfolio
-    let lmsResultPdfUrl = '';
-    let timetablePdfUrl = '';
-    let attendancePdfUrls: string[] = [];
-    if (courseInfo?.portfolio_data) {
-      try {
-        const parsed = JSON.parse(courseInfo.portfolio_data);
-        if (parsed.lms_result && parsed.lms_result.type === 'file' && parsed.lms_result.value) {
-          lmsResultPdfUrl = parsed.lms_result.value;
-        }
-        if (parsed.timetable && parsed.timetable.type === 'file' && parsed.timetable.value) {
-          timetablePdfUrl = parsed.timetable.value;
-        }
-        for (let i = 1; i <= 5; i++) {
-          const k = `attendance_pdf_${i}`;
-          if (parsed[k] && parsed[k].type === 'file' && parsed[k].value) {
-            attendancePdfUrls.push(parsed[k].value);
-          }
-        }
-      } catch (e) {
-        console.error('Failed to parse portfolio_data:', e);
-      }
-    }
-    const serverUrl = API_BASE.replace('/api', '');
-    const fullPdfUrl = lmsResultPdfUrl ? `${serverUrl}${lmsResultPdfUrl}` : '';
-    const fullTimetableUrl = timetablePdfUrl ? `${serverUrl}${timetablePdfUrl}` : '';
-    const fullAttendancePdfUrls = attendancePdfUrls.map(url => `${serverUrl}${url}`);
+    
 
     const tabDefs = [
         { id: 'dashboard', icon: '📄', label: 'Cover Page' },
@@ -372,137 +346,19 @@ function App() {
     // print-all-section JSX order:
     //   0=Cover, 1=TOS, 2=OBE, 3=Syllabus, 4=TeachingPlan,
     //   5=Attendance, 6=LecturerReport, 7=Portfolio
-    const sectionHtmls = Array.from(sections).map(sec => sec.innerHTML);
-    const panels: string[] = [];
+      const sectionHtmls = Array.from(sections).map(sec => sec.innerHTML);
+      const panels: string[] = [];
 
-    // Panel 0: Cover Page (sectionHtmls[0])
-    panels.push(
-      `<section id="panel-0" class="panel active">
-        <div class="panel-inner">${sectionHtmls[0]}</div>
-      </section>`
-    );
+      for (let i = 0; i < tabDefs.length; i++) {
+        const html = sectionHtmls[i] || '<div style="padding: 20px;">Section not found.</div>';
+        panels.push(
+          `<section id="panel-${i}" class="panel${i === 0 ? ' active' : ''}">
+            <div class="panel-inner">${html}</div>
+          </section>`
+        );
+      }
 
-    // Panel 1: LMS Results PDF (special – PDF iframe)
-    const lmsPanelContent = fullPdfUrl
-      ? `<iframe class="export-only" src="${fullPdfUrl}" style="width:100%;height:100vh;page-break-after:always;break-after:page;border:none;border-radius:8px;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);background-color:#525659;" title="Detail of Student Result (LMS)"></iframe>
-         <div class="print-link-only" style="margin-top: 20px;">📄 <strong>Detail of Student Result (LMS):</strong> <a href="${fullPdfUrl}" style="color: blue; text-decoration: underline;">${fullPdfUrl}</a></div>`
-      : `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:calc(100vh - 120px);text-align:center;color:#475569;padding:20px;box-sizing:border-box;">
-          <div style="font-size:4rem;margin-bottom:16px;">📄</div>
-          <h2 style="font-size:1.5rem;font-weight:700;color:#1e293b;margin-bottom:8px;">No Result PDF Uploaded</h2>
-          <p style="font-size:0.95rem;color:#64748b;max-width:400px;line-height:1.5;">The LMS Student Result Detail PDF has not been uploaded yet.</p>
-        </div>`;
-    panels.push(
-      `<section id="panel-1" class="panel">
-        <div class="panel-inner" style="padding:16px;height:100%;box-sizing:border-box;background:#f8fafc !important;">
-          ${lmsPanelContent}
-        </div>
-      </section>`
-    );
-
-    // Panel 2: Table of Specification (sectionHtmls[1])
-    panels.push(
-      `<section id="panel-2" class="panel">
-        <div class="panel-inner">${sectionHtmls[1]}</div>
-      </section>`
-    );
-
-    // Panel 3: OBE CLO/PLO (sectionHtmls[2])
-    panels.push(
-      `<section id="panel-3" class="panel">
-        <div class="panel-inner">${sectionHtmls[2]}</div>
-      </section>`
-    );
-
-    // Panel 4: Syllabus Outline (Table 4 PDF)
-    const fullSyllabusPdfUrl = courseInfo?.table4_path ? `${serverUrl}${courseInfo.table4_path}` : '';
-    const syllabusPanelContent = fullSyllabusPdfUrl
-      ? `<iframe class="export-only" src="${fullSyllabusPdfUrl}" style="width:100%;height:100vh;page-break-after:always;break-after:page;border:none;border-radius:8px;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);background-color:#525659;" title="Table 4 (Syllabus Outline PDF Document)"></iframe>
-         <div class="print-link-only" style="margin-top: 20px;">📄 <strong>Syllabus Outline PDF:</strong> <a href="${fullSyllabusPdfUrl}" style="color: blue; text-decoration: underline;">${fullSyllabusPdfUrl}</a></div>`
-      : `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:calc(100vh - 120px);text-align:center;color:#475569;padding:20px;box-sizing:border-box;">
-          <div style="font-size:4rem;margin-bottom:16px;">📄</div>
-          <h2 style="font-size:1.5rem;font-weight:700;color:#1e293b;margin-bottom:8px;">No Syllabus Outline PDF Uploaded</h2>
-          <p style="font-size:0.95rem;color:#64748b;max-width:400px;line-height:1.5;">The Table 4 (Syllabus Outline PDF Document) has not been uploaded yet.</p>
-        </div>`;
-    panels.push(
-      `<section id="panel-4" class="panel">
-        <div class="panel-inner" style="padding:16px;height:100%;box-sizing:border-box;background:#f8fafc !important;">
-          ${syllabusPanelContent}
-        </div>
-      </section>`
-    );
-
-    // Panel 5: Teaching Plan (sectionHtmls[4])
-    panels.push(
-      `<section id="panel-5" class="panel">
-        <div class="panel-inner">${sectionHtmls[4]}</div>
-      </section>`
-    );
-
-    // Panel 6: Teaching Materials (sectionHtmls[5])
-    panels.push(
-      `<section id="panel-6" class="panel">
-        <div class="panel-inner">${sectionHtmls[5]}</div>
-      </section>`
-    );
-
-    // Panel 7: Timetable of Lecturer (special – PDF iframe)
-    const timetablePanelContent = fullTimetableUrl
-      ? `<iframe class="export-only" src="${fullTimetableUrl}" style="width:100%;height:100vh;page-break-after:always;break-after:page;border:none;border-radius:8px;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);background-color:#525659;" title="Timetable of Lecturer"></iframe>
-         <div class="print-link-only" style="margin-top: 20px;">📄 <strong>Timetable of Lecturer:</strong> <a href="${fullTimetableUrl}" style="color: blue; text-decoration: underline;">${fullTimetableUrl}</a></div>`
-      : `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:calc(100vh - 120px);text-align:center;color:#475569;padding:20px;box-sizing:border-box;">
-          <div style="font-size:4rem;margin-bottom:16px;">🗓️</div>
-          <h2 style="font-size:1.5rem;font-weight:700;color:#1e293b;margin-bottom:8px;">No Timetable Uploaded</h2>
-          <p style="font-size:0.95rem;color:#64748b;max-width:400px;line-height:1.5;">The Timetable Schedule PDF has not been uploaded to the Course Portfolio yet.</p>
-        </div>`;
-    panels.push(
-      `<section id="panel-7" class="panel">
-        <div class="panel-inner" style="padding:16px;height:100%;box-sizing:border-box;background:#f8fafc !important;">
-          ${timetablePanelContent}
-        </div>
-      </section>`
-    );
-
-    // Panel 8: Student Monthly Attendance (sectionHtmls[6])
-    const attendancePdfHtml = fullAttendancePdfUrls.length > 0
-      ? `<div style="margin-top: 32px;"><h3 style="font-size:1.25rem;font-weight:600;margin-bottom:16px;">Student Monthly Attendance PDFs</h3>` + 
-        fullAttendancePdfUrls.map((url, idx) => `<div class="export-only" style="margin-bottom: 24px; height: 100vh; width: 100%; display: flex; flex-direction: column; page-break-after: always; break-after: page;"><h4 style="font-size:1rem;color:#475569;margin-bottom:8px;">Month ${idx + 1}</h4><iframe src="${url}" style="width:100%;flex:1;border:none;border-radius:8px;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);background-color:#525659;" title="Student Monthly Attendance Month ${idx + 1}"></iframe></div><div class="print-link-only" style="margin-bottom: 10px;">📄 <strong>Attendance Month ${idx + 1}:</strong> <a href="${url}" style="color: blue; text-decoration: underline;">${url}</a></div>`).join('') +
-        `</div>`
-      : '';
-    panels.push(
-      `<section id="panel-8" class="panel">
-        <div class="panel-inner">${sectionHtmls[6]}${attendancePdfHtml}</div>
-      </section>`
-    );
-
-    // Panel 9: Weekly Reports (sectionHtmls[7])
-    panels.push(
-      `<section id="panel-9" class="panel">
-        <div class="panel-inner">${sectionHtmls[7]}</div>
-      </section>`
-    );
-
-    // Panel 10: Coursework Docs (sectionHtmls[8])
-    panels.push(
-      `<section id="panel-10" class="panel">
-        <div class="panel-inner">${sectionHtmls[8]}</div>
-      </section>`
-    );
-
-    // Panel 11: Final Exam Docs (sectionHtmls[9])
-    panels.push(
-      `<section id="panel-11" class="panel">
-        <div class="panel-inner">${sectionHtmls[9]}</div>
-      </section>`
-    );
-
-    // Panel 12: Course Portfolio (sectionHtmls[10])
-    panels.push(
-      `<section id="panel-12" class="panel">
-        <div class="panel-inner">${sectionHtmls[10]}</div>
-      </section>`
-    );
-
-    const panelsHtml = panels.join('\n');
+      const panelsHtml = panels.join('\n');
 
     const html = `<!DOCTYPE html>
 <html lang="en">
