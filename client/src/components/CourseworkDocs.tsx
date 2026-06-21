@@ -261,6 +261,12 @@ export default function CourseworkDocs({ courseInfo, onRefresh, API_BASE, active
                 <iframe src={item.value} style={{ width: '100%', height: '1000px', border: '1px solid #ccc' }} title={item.name || 'PDF Document'} />
               </div>
             )}
+            {/* Embedded Image for Print/Export Mode */}
+            {item.type === 'file' && item.value?.startsWith('data:image/') && (
+              <div className="only-print" style={{ width: '100%', marginTop: '20px', pageBreakInside: 'avoid', textAlign: 'center' }}>
+                <img src={item.value} alt={item.name || 'Image Document'} style={{ maxWidth: '100%', maxHeight: '1000px', objectFit: 'contain' }} />
+              </div>
+            )}
           </div>
         ) : (
           <>
@@ -300,7 +306,7 @@ export default function CourseworkDocs({ courseInfo, onRefresh, API_BASE, active
             <div>
               <input
                 type="file"
-                accept="application/pdf"
+                accept="application/pdf, image/jpeg, image/jpg, image/png"
                 onChange={(e) => handleFileUpload(e, key)}
                 id={`file-upload-${key}`}
                 style={{ display: 'none' }}
