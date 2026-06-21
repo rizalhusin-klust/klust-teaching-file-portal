@@ -1028,7 +1028,7 @@ function App() {
           </li>
           <li>
             <div className={`nav-item ${activeTab === 'obe' ? 'active' : ''}`} onClick={() => setActiveTab('obe')}>
-              <span className="nav-icon">🎯</span> OBE CLO/PLO
+              <span className="nav-icon">🎯</span> OBE Assessment
             </div>
           </li>
           <li>
@@ -1297,7 +1297,7 @@ function App() {
 
         <PrintSeparator number={2} title={"OBE Assessment"} />
         <div className="print-all-section">
-          <PrintHeader title="OBE CLO / PLO Achievement" courseInfo={courseInfo} programName={programName} />
+          <PrintHeader title="OBE Assessment" courseInfo={courseInfo} programName={programName} />
           <ObeDashboard
             assessments={assessments}
             optionalGroups={optionalGroups}

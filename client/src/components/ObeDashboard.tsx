@@ -781,7 +781,7 @@ export default function ObeDashboard({ assessments,  obeMetrics, gradesData, isP
 
           {!isPrintMode && activeSubTab !== 'cqi' && (
             <div className="only-print" style={{ marginBottom: '20px' }}>
-              <PrintHeader title="OBE CLO / PLO Achievement" courseInfo={courseInfo || null} />
+              <PrintHeader title="OBE Assessment" courseInfo={courseInfo || null} />
             </div>
           )}
 
