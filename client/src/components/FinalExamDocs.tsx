@@ -208,65 +208,76 @@ export default function FinalExamDocs({ courseInfo, onRefresh, API_BASE, activeC
             flexDirection: 'column',
             gap: '10px'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '1.2rem' }}>
-                {item.type === 'link' ? '🔗' : '📄'}
-              </span>
-              {item.type === 'link' ? (
-                <a href={item.value} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.8rem', color: '#3b82f6', textDecoration: 'underline', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '500px' }}>
-                  {item.value}
-                </a>
-              ) : (
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '240px' }}>
-                  {item.name || 'Uploaded File'}
-                </span>
-              )}
-            </div>
-            <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
-              {item.type === 'link' ? (
-                <a 
-                  href={item.value} 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="btn btn-secondary" 
-                  style={{ padding: '4px 8px', fontSize: '0.75rem', display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}
-                >
-                  ↗️ Open
-                </a>
-              ) : (
+            {(() => {
+              const fullUrl = item.value?.startsWith('/') ? `${API_BASE.replace('/api', '')}${item.value}` : item.value;
+              const isPdf = item.type === 'file' && (item.name?.toLowerCase().endsWith('.pdf') || item.value?.toLowerCase().endsWith('.pdf'));
+              const isImg = item.type === 'file' && (item.name?.match(/\.(jpeg|jpg|png)$/i) || item.value?.match(/\.(jpeg|jpg|png)$/i));
+              
+              return (
                 <>
-                  <a 
-                    href={item.value}
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="btn btn-secondary" 
-                    style={{ padding: '4px 8px', fontSize: '0.75rem', display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}
-                  >
-                    👁️ Preview
-                  </a>
-                  <a 
-                    href={item.value}
-                    className="btn btn-secondary" 
-                    style={{ padding: '4px 8px', fontSize: '0.75rem', display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}
-                    download
-                  >
-                    ⬇️ Download
-                  </a>
+                  <div className="no-print" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '1.2rem' }}>
+                      {item.type === 'link' ? '🔗' : '📄'}
+                    </span>
+                    {item.type === 'link' ? (
+                      <a href={item.value} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.8rem', color: '#3b82f6', textDecoration: 'underline', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '500px' }}>
+                        {item.value}
+                      </a>
+                    ) : (
+                      <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '240px' }}>
+                        {item.name || 'Uploaded File'}
+                      </span>
+                    )}
+                  </div>
+                  <div className="no-print" style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
+                    {item.type === 'link' ? (
+                      <a 
+                        href={item.value} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="btn btn-secondary" 
+                        style={{ padding: '4px 8px', fontSize: '0.75rem', display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}
+                      >
+                        ↗️ Open
+                      </a>
+                    ) : (
+                      <>
+                        <a 
+                          href={fullUrl}
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="btn btn-secondary" 
+                          style={{ padding: '4px 8px', fontSize: '0.75rem', display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}
+                        >
+                          👁️ Preview
+                        </a>
+                        <a 
+                          href={fullUrl}
+                          className="btn btn-secondary" 
+                          style={{ padding: '4px 8px', fontSize: '0.75rem', display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}
+                          download
+                        >
+                          ⬇️ Download
+                        </a>
+                      </>
+                    )}
+                  </div>
+                  
+                  {/* Embedded PDF for Print/Export Mode */}
+                  {isPdf && (
+                    <div className="only-print" style={{ width: '100%', marginTop: '20px', pageBreakInside: 'avoid' }}>
+                      <iframe src={fullUrl} style={{ width: '100%', height: '1000px', border: '1px solid #ccc' }} title={item.name || 'PDF Document'} />
+                    </div>
+                  )}
+                  {/* Embedded Image for Print/Export Mode */}
+                  {isImg && (
+                    <div className="only-print" style={{ width: '100%', marginTop: '20px', pageBreakInside: 'avoid', textAlign: 'center' }}>
+                      <img src={fullUrl} alt={item.name || 'Image Document'} style={{ maxWidth: '100%', maxHeight: '1000px', objectFit: 'contain' }} />
+                    </div>
+                  )}
                 </>
-              )}
-            </div>
-            {/* Embedded PDF for Print/Export Mode */}
-            {item.type === 'file' && item.value?.startsWith('data:application/pdf') && (
-              <div className="only-print" style={{ width: '100%', marginTop: '20px', pageBreakInside: 'avoid' }}>
-                <iframe src={item.value} style={{ width: '100%', height: '1000px', border: '1px solid #ccc' }} title={item.name || 'PDF Document'} />
-              </div>
-            )}
-            {/* Embedded Image for Print/Export Mode */}
-            {item.type === 'file' && item.value?.startsWith('data:image/') && (
-              <div className="only-print" style={{ width: '100%', marginTop: '20px', pageBreakInside: 'avoid', textAlign: 'center' }}>
-                <img src={item.value} alt={item.name || 'Image Document'} style={{ maxWidth: '100%', maxHeight: '1000px', objectFit: 'contain' }} />
-              </div>
-            )}
+              );
+            })()}
           </div>
         ) : (
           <>
