@@ -9,6 +9,7 @@ import AttendanceRegistry from './components/AttendanceRegistry';
 import LecturerReport from './components/LecturerReport';
 import SyllabusSetup from './components/SyllabusSetup';
 import TeachingPlan from './components/TeachingPlan';
+import LecturerTimetable from './components/LecturerTimetable';
 import TeachingMaterials from './components/TeachingMaterials';
 import CourseworkDocs from './components/CourseworkDocs';
 import FinalExamDocs from './components/FinalExamDocs';
@@ -932,6 +933,8 @@ function App() {
             cloPloMappings={cloPloMappings}
           />
         );
+            case 'time_table':
+        return <LecturerTimetable courseInfo={courseInfo} onRefresh={refreshAll} API_BASE={API_BASE} activeCourseId={activeCourseId} programName={programName} />;
       case 'teaching_materials':
         return (
           <TeachingMaterials
