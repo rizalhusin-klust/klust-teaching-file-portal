@@ -14,6 +14,8 @@ import TeachingMaterials from './components/TeachingMaterials';
 import CourseworkDocs from './components/CourseworkDocs';
 import FinalExamDocs from './components/FinalExamDocs';
 import CoursePortfolio from './components/CoursePortfolio';
+import FinalResultDocs from './components/FinalResultDocs';
+import MiscDocs from './components/MiscDocs';
 import PrintHeader from './components/PrintHeader';
 
 export type Student = {
@@ -974,6 +976,10 @@ function App() {
           return <CoursePortfolio courseInfo={courseInfo} onRefresh={refreshAll} API_BASE={API_BASE} activeCourseId={activeCourseId} students={students} printMode="coursework" />;
         case 'exam_scripts':
           return <CoursePortfolio courseInfo={courseInfo} onRefresh={refreshAll} API_BASE={API_BASE} activeCourseId={activeCourseId} students={students} printMode="exam" />;
+        case 'final_result':
+          return <FinalResultDocs courseInfo={courseInfo} onRefresh={refreshAll} API_BASE={API_BASE} activeCourseId={activeCourseId} programName={programName} />;
+        case 'misc_record':
+          return <MiscDocs courseInfo={courseInfo} onRefresh={refreshAll} API_BASE={API_BASE} activeCourseId={activeCourseId} programName={programName} />;
         case 'portfolio':
         return <CoursePortfolio courseInfo={courseInfo} onRefresh={refreshAll} API_BASE={API_BASE} activeCourseId={activeCourseId} students={students} />;
       default:
@@ -1505,13 +1511,14 @@ function App() {
           <PrintSeparator number={13} title={"Miscellaneous Records"} />
           <div className="print-all-section">
             <PrintHeader title="Course Portfolio" courseInfo={courseInfo} programName={programName} />
-            <CoursePortfolio
-              courseInfo={courseInfo}
-              onRefresh={() => {}}
-              API_BASE={API_BASE}
-              activeCourseId={activeCourseId}
-              students={students}
-            />
+            <MiscDocs
+                courseInfo={courseInfo}
+                onRefresh={() => {}}
+                API_BASE={API_BASE}
+                activeCourseId={activeCourseId}
+                programName={programName}
+                hidePrintHeader={true}
+              />
           </div>
         </div>
       </>

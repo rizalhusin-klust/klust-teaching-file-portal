@@ -25,9 +25,6 @@ type PortfolioMap = {
 
 const PORTFOLIO_KEYS = [
   { key: 'timetable', label: 'Timetable Schedule', group: 'general' },
-  { key: 'lms_result', label: 'Detail of Result (LMS)', group: 'general' },
-  { key: 'misc', label: 'Miscellaneous Documents', group: 'general' },
-
   { key: 'cw_best_1', label: 'CW Best Sample 1', group: 'cw_best' },
   { key: 'cw_best_2', label: 'CW Best Sample 2', group: 'cw_best' },
   { key: 'cw_best_3', label: 'CW Best Sample 3', group: 'cw_best' },
