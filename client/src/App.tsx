@@ -1,3 +1,4 @@
+import JSZip from 'jszip';
 import { useState, useEffect, useRef } from 'react';
 import Dashboard from './components/Dashboard';
 import Roster from './components/Roster';
@@ -671,16 +672,64 @@ function App() {
 </body>
 </html>`;
 
-    // Trigger download
-    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href     = url;
-    a.download = `${courseCode}_portfolio.html`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    // Trigger download via JSZip
+    try {
+      const zip = new JSZip();
+      let modifiedHtml = html;
+      const uploadsFolder = zip.folder("uploads");
+
+      // Find all /uploads/ URLs in the HTML string
+      const urlRegex = /(?:src|href)="([^"]*\/uploads\/[^"]+)"/g;
+      const urlsToFetch = new Set<string>();
+      let match;
+      
+      while ((match = urlRegex.exec(html)) !== null) {
+        urlsToFetch.add(match[1]);
+      }
+
+      // Download all files and add them to the zip
+      for (const fileUrl of urlsToFetch) {
+        try {
+          const response = await fetch(fileUrl);
+          if (!response.ok) throw new Error('Network response was not ok');
+          const blob = await response.blob();
+          
+          // Extract filename from the URL
+          const urlParts = fileUrl.split('/');
+          let filename = urlParts[urlParts.length - 1];
+          filename = filename.split('?')[0]; // strip query params
+          
+          // Add file to zip
+          if (uploadsFolder) {
+            uploadsFolder.file(filename, blob);
+          }
+          
+          // Replace URL in HTML with relative local path
+          const localPath = `./uploads/${filename}`;
+          modifiedHtml = modifiedHtml.split(fileUrl).join(localPath);
+        } catch (err) {
+          console.error('Failed to fetch file for export:', fileUrl, err);
+        }
+      }
+
+      // Add the modified HTML to the zip
+      zip.file("index.html", modifiedHtml);
+
+      // Generate the ZIP file and trigger download
+      const zipBlob = await zip.generateAsync({ type: "blob" });
+      const url = URL.createObjectURL(zipBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${courseCode}_portfolio.zip`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+    } catch (err) {
+      console.error('Failed to generate ZIP:', err);
+      alert('An error occurred while generating the ZIP file. Please check the console.');
+    }
 
     // Cleanup overlay
     setIsPrintingAll(false);
