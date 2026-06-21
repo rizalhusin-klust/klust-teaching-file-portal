@@ -326,14 +326,30 @@ export default function SyllabusSetup({ cloPloMappings, clos: closProp, plos: pl
         )}
 
         {courseInfo?.table4_path ? (
-          <div>
-            <iframe
-              src={`http://localhost:3001${courseInfo.table4_path}`}
-              width="100%"
-              height="600px"
-              style={{ border: '1px solid var(--border-color)', borderRadius: '8px', background: 'var(--bg-app)' }}
-              title="Table 4 PDF Document"
-            />
+          <div style={{ background: 'rgba(255,255,255,0.02)', padding: '10px', borderRadius: '6px', display: 'flex', flexDirection: 'column', border: '1px solid rgba(255,255,255,0.05)', gap: '10px' }}>
+            <div className="no-print" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden', flex: 1, minWidth: 0 }}>
+                <span style={{ fontSize: '1.1rem' }}>📄</span>
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '180px' }}>
+                  Syllabus Outline PDF
+                </span>
+              </div>
+              <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
+                <a href={`${API_BASE.replace('/api', '')}${courseInfo.table4_path}`} target="_blank" rel="noopener noreferrer" className="btn btn-secondary" style={{ padding: '4px 8px', fontSize: '0.75rem', display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}>
+                  👁️ Preview
+                </a>
+                <a href={`${API_BASE.replace('/api', '')}${courseInfo.table4_path}`} className="btn btn-secondary" style={{ padding: '4px 8px', fontSize: '0.75rem', display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }} download>
+                  ⬇️ Download
+                </a>
+              </div>
+            </div>
+            <div className="only-print" style={{ width: '100%', height: '100vh', pageBreakAfter: 'always', breakAfter: 'page', display: 'flex', flexDirection: 'column', marginTop: '20px' }}>
+              <iframe
+                src={`${API_BASE.replace('/api', '')}${courseInfo.table4_path}`}
+                style={{ width: '100%', flex: 1, border: 'none', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)', backgroundColor: '#525659' }}
+                title="Table 4 PDF Document"
+              />
+            </div>
           </div>
         ) : (
           <div style={{ padding: '40px', border: '2px dashed var(--border-color)', borderRadius: '8px', textAlign: 'center', background: 'var(--bg-app)' }}>
