@@ -145,42 +145,52 @@ export default function AttendanceRegistry({ students, attendance, onUpdateAtten
     setUploadError(prev => ({ ...prev, [key]: '' }));
 
     try {
-      const arrayBuffer = await file.arrayBuffer();
-      const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
-
-      const res = await fetch(`${API_BASE}/courses/${activeCourseId}/upload-portfolio`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          key,
-          fileName: file.name,
-          fileData: base64,
-          mimeType: 'application/pdf',
-        }),
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        const saved = data.portfolio_data?.[key];
-        if (saved?.value) {
-          setPdfs(prev => ({
-            ...prev,
-            [key]: {
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64 = reader.result as string;
+        try {
+          const res = await fetch(`${API_BASE}/courses/${activeCourseId}/upload-portfolio`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
               key,
-              url: saved.value,
-              name: saved.name || file.name
+              fileName: file.name,
+              fileBase64: base64
+            }),
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            const saved = data.portfolio_data?.[key];
+            if (saved?.value) {
+              setPdfs(prev => ({
+                ...prev,
+                [key]: {
+                  key,
+                  url: saved.value,
+                  name: saved.name || file.name
+                }
+              }));
             }
-          }));
+          } else {
+            setUploadError(prev => ({ ...prev, [key]: 'Upload failed. Please try again.' }));
+          }
+        } catch {
+          setUploadError(prev => ({ ...prev, [key]: 'An error occurred during upload.' }));
+        } finally {
+          setUploadingKey(null);
         }
-      } else {
-        setUploadError(prev => ({ ...prev, [key]: 'Upload failed. Please try again.' }));
-      }
+      };
+      reader.onerror = () => {
+        setUploadError(prev => ({ ...prev, [key]: 'FileReader error.' }));
+        setUploadingKey(null);
+      };
+      reader.readAsDataURL(file);
     } catch {
-      setUploadError(prev => ({ ...prev, [key]: 'An error occurred during upload.' }));
-    } finally {
+      setUploadError(prev => ({ ...prev, [key]: 'Exception occurred.' }));
       setUploadingKey(null);
-      e.target.value = '';
     }
+    e.target.value = '';
   };
 
   const handleResetPdf = async (key: string) => {
