@@ -1139,11 +1139,7 @@ function App() {
               <span className="nav-icon">🗂️</span> Miscellaneous Record
             </div>
           </li>
-          <li>
-            <div className={`nav-item ${activeTab === 'portfolio' ? 'active' : ''}`} onClick={() => setActiveTab('portfolio')}>
-              <span className="nav-icon">📁</span> Course Portfolio
-            </div>
-          </li>
+          
         </ul>
       </aside>
 
