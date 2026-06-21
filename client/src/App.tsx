@@ -1321,7 +1321,7 @@ function App() {
         {/* 4. Teaching Plan */}
         <PrintSeparator number={4} title={"Teaching Plan"} />
         <div className="print-all-section">
-          <PrintHeader title="Teaching Plan" courseInfo={courseInfo} programName={programName} />
+          
           <TeachingPlan
             reports={reports}
             onRefresh={() => {}}
@@ -1391,7 +1391,7 @@ function App() {
         {/* 10. Final Exam Scripts */}
         <PrintSeparator number={10} title={"Final Exam Scripts"} />
         <div className="print-all-section">
-          <PrintHeader title="Examination Script Samples Portfolio" courseInfo={courseInfo} programName={programName} />
+          
           <CoursePortfolio courseInfo={courseInfo} onRefresh={() => {}} API_BASE={API_BASE} activeCourseId={activeCourseId} students={students} printMode="exam" isPrintMode={true} />
         </div>
 
@@ -1404,7 +1404,7 @@ function App() {
         {/* 12. Coursework Samples */}
         <PrintSeparator number={12} title={"Samples of Student Coursework"} />
         <div className="print-all-section">
-          <PrintHeader title="Coursework Student Samples Portfolio" courseInfo={courseInfo} programName={programName} />
+          
           <CoursePortfolio courseInfo={courseInfo} onRefresh={() => {}} API_BASE={API_BASE} activeCourseId={activeCourseId} students={students} printMode="coursework" isPrintMode={true} />
         </div>
 
