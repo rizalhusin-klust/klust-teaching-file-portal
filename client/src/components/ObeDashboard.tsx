@@ -12,10 +12,14 @@ type ObeDashboardProps = {
   API_BASE?: string;
   activeCourseId?: number | null;
   onRefresh?: () => void;
+  activeSubTab?: 'clo' | 'plo' | 'student-clo' | 'student-plo' | 'cqi';
+  hideInternalTabs?: boolean;
 };
 
-export default function ObeDashboard({ assessments,  obeMetrics, gradesData, isPrintMode, courseInfo, API_BASE, activeCourseId, onRefresh }: ObeDashboardProps) {
-  const [activeSubTab, setActiveSubTab] = useState<'clo' | 'plo' | 'student-clo' | 'student-plo' | 'cqi'>('clo');
+export default function ObeDashboard({ assessments,  obeMetrics, gradesData, isPrintMode, courseInfo, API_BASE, activeCourseId, onRefresh, activeSubTab: externalSubTab, hideInternalTabs }: ObeDashboardProps) {
+  const [internalSubTab, setInternalSubTab] = useState<'clo' | 'plo' | 'student-clo' | 'student-plo' | 'cqi'>('clo');
+  const activeSubTab = externalSubTab || internalSubTab;
+  const setActiveSubTab = setInternalSubTab;
   const [cqiActions, setCqiActions] = useState<Record<string, string>>({});
   const [prevCloScores, setPrevCloScores] = useState<Record<string, string>>({});
   const [prevPloScores, setPrevPloScores] = useState<Record<string, string>>({});
@@ -761,7 +765,7 @@ export default function ObeDashboard({ assessments,  obeMetrics, gradesData, isP
       ) : (
         <>
           {/* Screen Mode: Sub tabs nav */}
-          <div className="no-print" style={{ display: 'flex', gap: '10px', borderBottom: '1px solid var(--border-color)', paddingBottom: '10px' }}>
+            {!hideInternalTabs && <div className="no-print" style={{ display: 'flex', gap: '10px', borderBottom: '1px solid var(--border-color)', paddingBottom: '10px' }}>
             <button className={`btn ${activeSubTab === 'clo' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setActiveSubTab('clo')}>
               📊 CLO Analysis
             </button>
@@ -777,9 +781,9 @@ export default function ObeDashboard({ assessments,  obeMetrics, gradesData, isP
             <button className={`btn ${activeSubTab === 'cqi' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setActiveSubTab('cqi')}>
               📈 CQI Report
             </button>
-          </div>
+            </div>}
 
-          {!isPrintMode && activeSubTab !== 'cqi' && (
+            {!isPrintMode && activeSubTab !== 'cqi' && (!hideInternalTabs) && (
             <div className="only-print" style={{ marginBottom: '20px' }}>
               <PrintHeader title="OBE Assessment" courseInfo={courseInfo || null} />
             </div>
