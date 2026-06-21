@@ -130,7 +130,7 @@ const API_BASE = 'http://localhost:3001/api';
 
 
 const PrintSeparator = ({ number, title }: { number: number | string; title: string }) => (
-  <div className="print-all-section" style={{ border: 'none', boxShadow: 'none', width: '100%', maxWidth: '100%', height: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-end', textAlign: 'right', margin: 0, padding: '4rem', boxSizing: 'border-box' }}>
+  <div className="print-separator-section" style={{ border: 'none', boxShadow: 'none', width: '100%', maxWidth: '100%', height: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-end', textAlign: 'right', margin: 0, padding: '4rem', boxSizing: 'border-box' }}>
     <div style={{ fontFamily: '"Segoe UI", -apple-system, sans-serif', fontWeight: 900, color: 'transparent', WebkitTextStroke: '3px black', fontSize: '9rem', lineHeight: 1, margin: 0, letterSpacing: '-0.02em' }}>
       {number}
     </div>
@@ -329,19 +329,20 @@ function App() {
     const fullAttendancePdfUrls = attendancePdfUrls.map(url => `${serverUrl}${url}`);
 
     const tabDefs = [
-      { icon: '📊', label: 'Cover Page' },
-      { icon: '📈', label: 'Detail of Result (LMS)' },
-      { icon: '📑', label: 'Table of Specification' },
-      { icon: '🎯', label: 'OBE CLO / PLO' },
-      { icon: '📖', label: 'Syllabus Outline' },
-      { icon: '📋', label: 'Teaching Plan' },
-      { icon: '🔗', label: 'Teaching Materials' },
-      { icon: '🗓️', label: 'Timetable of Lecturer' },
-      { icon: '📅', label: 'Student Monthly Attendance' },
-      { icon: '📝', label: 'Weekly Reports (KLUST F28)' },
-      { icon: '📑', label: 'Coursework Docs' },
-      { icon: '📄', label: 'Examination Docs' },
-      { icon: '📂', label: 'Course Portfolio' },
+      { icon: '📄', label: 'Cover Page' },
+      { icon: '📄', label: '1. Details of Students\' Results' },
+      { icon: '📄', label: '2. OBE Assessment' },
+      { icon: '📄', label: '3. Course Syllabus' },
+      { icon: '📄', label: '4. Teaching Plan' },
+      { icon: '📄', label: '5. Time-Table of Lecturer' },
+      { icon: '📄', label: '6. Student Monthly Attendance' },
+      { icon: '📄', label: '7. Report by Lecturer' },
+      { icon: '📄', label: '8. Teaching Materials' },
+      { icon: '📄', label: '9. Moderated Final Exam' },
+      { icon: '📄', label: '10. Final Exam Scripts' },
+      { icon: '📄', label: '11. Coursework & Marking' },
+      { icon: '📄', label: '12. Samples of Coursework' },
+      { icon: '📄', label: '13. Miscellaneous Records' }
     ];
 
     const courseCode = courseInfo?.course_code || 'COURSE';
@@ -1183,6 +1184,7 @@ function App() {
               background: white;
               color: black;
             }
+            .print-separator-section { page-break-after: always; break-after: page; background: white !important; color: black !important; padding: 0.5in 0.5in 0.3in 0.5in; }
             .print-all-section {
               page-break-after: always;
               break-after: page;
