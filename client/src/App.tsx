@@ -325,7 +325,7 @@ function App() {
       { icon: '📅', label: 'Student Monthly Attendance' },
       { icon: '📝', label: 'Weekly Reports (KLUST F28)' },
       { icon: '📑', label: 'Coursework Docs' },
-      { icon: '📄', label: 'Final Exam / Assessment Docs' },
+      { icon: '📄', label: 'Examination Docs' },
       { icon: '📂', label: 'Course Portfolio' },
     ];
 
@@ -1019,7 +1019,7 @@ function App() {
           </li>
           <li>
             <div className={`nav-item ${activeTab === 'final_exam_docs' ? 'active' : ''}`} onClick={() => setActiveTab('final_exam_docs')}>
-              <span className="nav-icon">📄</span> Final Exam Docs
+              <span className="nav-icon">📄</span> Examination Docs
             </div>
           </li>
           <li>
@@ -1361,9 +1361,9 @@ function App() {
           />
         </div>
 
-        {/* ===== SECTION 9: FINAL EXAM / ASSESSMENT DOCS ===== */}
+        {/* ===== SECTION 9: EXAMINATION DOCS ===== */}
         <div className="print-all-section">
-          <PrintHeader title="Final Exam / Assessment Documents" courseInfo={courseInfo} programName={programName} />
+          <PrintHeader title="Examination Documents" courseInfo={courseInfo} programName={programName} />
           <FinalExamDocs
             courseInfo={courseInfo}
             onRefresh={() => {}}

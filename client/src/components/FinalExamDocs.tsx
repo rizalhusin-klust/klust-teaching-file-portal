@@ -18,16 +18,12 @@ type PortfolioMap = {
   [key: string]: PortfolioItem;
 };
 
-const DOC_KEYS = [
-  { key: 'final_exam_doc', label: 'Final Examination / Assessment Document' },
-  { key: 'marking_scheme_doc', label: 'Marking Scheme' }
-];
-
 export default function FinalExamDocs({ courseInfo, onRefresh, API_BASE, activeCourseId }: FinalExamDocsProps) {
   const [portfolio, setPortfolio] = useState<PortfolioMap>({});
   const [inputLinks, setInputLinks] = useState<{ [key: string]: string }>({});
   const [uploadingKey, setUploadingKey] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<{ [key: string]: string }>({});
+  const [setCount, setSetCount] = useState(1);
 
   useEffect(() => {
     if (courseInfo && courseInfo.portfolio_data) {
@@ -37,19 +33,34 @@ export default function FinalExamDocs({ courseInfo, onRefresh, API_BASE, activeC
         
         // Pre-fill link inputs
         const links: { [key: string]: string } = {};
+        let maxIndex = 1;
+
         Object.keys(parsed).forEach(k => {
           if (parsed[k].type === 'link') {
             links[k] = parsed[k].value || '';
           }
+          
+          // Check for index in final_exam_doc_X or marking_scheme_doc_X
+          const match = k.match(/^(final_exam|marking_scheme)_doc(?:_(\d+))?$/);
+          if (match) {
+            const idx = match[2] ? parseInt(match[2], 10) : 1;
+            if (idx > maxIndex) {
+              maxIndex = idx;
+            }
+          }
         });
+        
         setInputLinks(links);
+        setSetCount(maxIndex);
       } catch (e) {
         console.error('Failed to parse portfolio_data:', e);
         setPortfolio({});
+        setSetCount(1);
       }
     } else {
       setPortfolio({});
       setInputLinks({});
+      setSetCount(1);
     }
     setUploadError({});
   }, [courseInfo]);
@@ -359,17 +370,35 @@ export default function FinalExamDocs({ courseInfo, onRefresh, API_BASE, activeC
   };
 
   return (
-    <div style={{ padding: '16px' }}>
-      <h2 className="no-print" style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--text-active)', marginBottom: '16px' }}>
-        Final Exam / Assessment Documents
-      </h2>
-      <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '24px' }}>
-        Upload the final examination question paper / assessment guidelines and the corresponding marking scheme as a PDF, or provide a direct link.
-      </p>
+      <div className="view-card" style={{ padding: '20px 15px' }}>
+        <h2 className="no-print" style={{ fontSize: '1.4rem', marginBottom: '8px' }}>
+          Examination Documents
+        </h2>
+        <p className="no-print" style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '24px' }}>
+          Upload the Final Examination / Assessment Document and the corresponding Marking Scheme as a PDF, or provide a direct link.
+        </p>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
-        {DOC_KEYS.map(k => renderSlotCard(k.key, k.label))}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
+          {Array.from({ length: setCount }).flatMap((_, i) => {
+            const idx = i + 1;
+            const suffix = idx === 1 ? '' : `_${idx}`;
+            const labelSuffix = idx === 1 ? '' : ` ${idx}`;
+            return [
+              renderSlotCard(`final_exam_doc${suffix}`, `Final Examination / Assessment Document${labelSuffix}`),
+              renderSlotCard(`marking_scheme_doc${suffix}`, `Marking Scheme${labelSuffix}`)
+            ];
+          })}
+        </div>
+        
+        <div className="no-print" style={{ marginTop: '24px', textAlign: 'center' }}>
+          <button 
+            className="btn btn-secondary" 
+            onClick={() => setSetCount(prev => prev + 1)}
+            style={{ padding: '8px 16px', fontSize: '0.9rem', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+          >
+            <span style={{ fontSize: '1.2rem' }}>+</span> Add More Examination Documents
+          </button>
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }

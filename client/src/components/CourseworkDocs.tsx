@@ -18,16 +18,12 @@ type PortfolioMap = {
   [key: string]: PortfolioItem;
 };
 
-const DOC_KEYS = [
-  { key: 'coursework_brief_doc', label: 'Coursework Brief' },
-  { key: 'coursework_rubric_doc', label: 'Marking Scheme / Rubric' }
-];
-
 export default function CourseworkDocs({ courseInfo, onRefresh, API_BASE, activeCourseId }: CourseworkDocsProps) {
   const [portfolio, setPortfolio] = useState<PortfolioMap>({});
   const [inputLinks, setInputLinks] = useState<{ [key: string]: string }>({});
   const [uploadingKey, setUploadingKey] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<{ [key: string]: string }>({});
+  const [setCount, setSetCount] = useState(1);
 
   useEffect(() => {
     if (courseInfo && courseInfo.portfolio_data) {
@@ -37,19 +33,34 @@ export default function CourseworkDocs({ courseInfo, onRefresh, API_BASE, active
         
         // Pre-fill link inputs
         const links: { [key: string]: string } = {};
+        let maxIndex = 1;
+
         Object.keys(parsed).forEach(k => {
           if (parsed[k].type === 'link') {
             links[k] = parsed[k].value || '';
           }
+          
+          // Check for index in coursework_brief_doc_X or coursework_rubric_doc_X
+          const match = k.match(/^coursework_(brief|rubric)_doc(?:_(\d+))?$/);
+          if (match) {
+            const idx = match[2] ? parseInt(match[2], 10) : 1;
+            if (idx > maxIndex) {
+              maxIndex = idx;
+            }
+          }
         });
+        
         setInputLinks(links);
+        setSetCount(maxIndex);
       } catch (e) {
         console.error('Failed to parse portfolio_data:', e);
         setPortfolio({});
+        setSetCount(1);
       }
     } else {
       setPortfolio({});
       setInputLinks({});
+      setSetCount(1);
     }
     setUploadError({});
   }, [courseInfo]);
@@ -359,16 +370,34 @@ export default function CourseworkDocs({ courseInfo, onRefresh, API_BASE, active
   };
 
   return (
-    <div style={{ padding: '16px' }}>
-      <h2 className="no-print" style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--text-active)', marginBottom: '16px' }}>
+    <div className="view-card" style={{ padding: '20px 15px' }}>
+      <h2 className="no-print" style={{ fontSize: '1.4rem', marginBottom: '8px' }}>
         Coursework Documents
       </h2>
-      <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '24px' }}>
+      <p className="no-print" style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '24px' }}>
         Upload the Coursework Brief and the corresponding Marking Scheme / Rubric as a PDF, or provide a direct link.
       </p>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
-        {DOC_KEYS.map(k => renderSlotCard(k.key, k.label))}
+        {Array.from({ length: setCount }).flatMap((_, i) => {
+          const idx = i + 1;
+          const suffix = idx === 1 ? '' : `_${idx}`;
+          const labelSuffix = idx === 1 ? '' : ` ${idx}`;
+          return [
+            renderSlotCard(`coursework_brief_doc${suffix}`, `Coursework Brief${labelSuffix}`),
+            renderSlotCard(`coursework_rubric_doc${suffix}`, `Marking Scheme / Rubric${labelSuffix}`)
+          ];
+        })}
+      </div>
+      
+      <div className="no-print" style={{ marginTop: '24px', textAlign: 'center' }}>
+        <button 
+          className="btn btn-secondary" 
+          onClick={() => setSetCount(prev => prev + 1)}
+          style={{ padding: '8px 16px', fontSize: '0.9rem', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+        >
+          <span style={{ fontSize: '1.2rem' }}>+</span> Add More Coursework Documents
+        </button>
       </div>
     </div>
   );
