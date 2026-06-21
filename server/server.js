@@ -1,4 +1,7 @@
 import express from 'express';
+import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+dotenv.config();
 import cors from 'cors';
 import sqlite3 from 'sqlite3';
 import path from 'path';
@@ -22,6 +25,34 @@ app.use(express.json({ limit: '50mb' }));
 
 // Serve uploaded files (PDFs, images) as static assets
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+
+const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_for_local_dev';
+const APP_PASSWORD = process.env.APP_PASSWORD || 'password123';
+
+app.post('/api/auth/login', (req, res) => {
+  const { password } = req.body;
+  if (password === APP_PASSWORD) {
+    const token = jwt.sign({ authenticated: true }, JWT_SECRET, { expiresIn: '7d' });
+    return res.json({ token });
+  }
+  return res.status(401).json({ error: 'Invalid password' });
+});
+
+app.use('/api', (req, res, next) => {
+  if (req.path === '/auth/login') return next();
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized: No token provided' });
+  }
+  const token = authHeader.split(' ')[1];
+  try {
+    jwt.verify(token, JWT_SECRET);
+    next();
+  } catch (err) {
+    return res.status(403).json({ error: 'Forbidden: Invalid or expired token' });
+  }
+});
 
 // 1. Dashboard Summary Stats
 app.get('/api/dashboard', async (req, res) => {

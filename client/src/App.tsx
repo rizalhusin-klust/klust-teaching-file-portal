@@ -14,6 +14,7 @@ import TeachingMaterials from './components/TeachingMaterials';
 import CourseworkDocs from './components/CourseworkDocs';
 import FinalExamDocs from './components/FinalExamDocs';
 import CoursePortfolio from './components/CoursePortfolio';
+import Login from './components/Login';
 import FinalResultDocs from './components/FinalResultDocs';
 import MiscDocs from './components/MiscDocs';
 import PrintHeader from './components/PrintHeader';
@@ -149,6 +150,7 @@ function App() {
   const [isObeMenuOpen, setIsObeMenuOpen] = useState<boolean>(true);
   const [isPlanMenuOpen, setIsPlanMenuOpen] = useState<boolean>(true);
   const [isCourseworkMenuOpen, setIsCourseworkMenuOpen] = useState<boolean>(true);
+  const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
   const [isExamMenuOpen, setIsExamMenuOpen] = useState<boolean>(true);
   const [courses, setCourses] = useState<CourseInfo[]>([]);
   const [activeCourseId, setActiveCourseId] = useState<number | null>(null);
@@ -263,6 +265,12 @@ function App() {
     } finally {
       setLoading(false);
     }
+  };
+
+  
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setToken(null);
   };
 
   const refreshAll = async () => {
@@ -848,6 +856,14 @@ function App() {
     }
   };
 
+  
+  if (!token) {
+    return <Login onLogin={(t) => {
+      localStorage.setItem('token', t);
+      setToken(t);
+    }} API_BASE={API_BASE} />;
+  }
+
   const programCode = students.find(s => s.programme)?.programme || 'FBE301';
   const programName = programCode.toUpperCase() === 'FBE301' ? 'Bachelor of Science (Architectural Studies)' : programCode;
 
@@ -1038,7 +1054,15 @@ function App() {
         {/* ── Row 2: Action Toolbar ── */}
         <div className="header-toolbar no-print">
           <button className="btn btn-secondary" onClick={refreshAll}>🔄 Refresh</button>
-          <button
+          
+          <button 
+            className="btn btn-secondary"
+            onClick={handleLogout}
+            style={{ borderColor: '#ef4444', color: '#ef4444' }}
+          >
+            Logout
+          </button>
+<button
             className="btn btn-secondary"
             onClick={() => setTheme(prev => prev === 'dark' ? 'light' : 'dark')}
             title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
