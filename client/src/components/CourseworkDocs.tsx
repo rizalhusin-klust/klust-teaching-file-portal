@@ -266,7 +266,7 @@ export default function CourseworkDocs({ courseInfo, onRefresh, API_BASE, active
                   {/* Embedded PDF for Print/Export Mode */}
                   {isPdf && (
                     <div className="only-print" style={{ width: '100%', height: '100vh', pageBreakAfter: 'always', breakAfter: 'page', display: 'flex', flexDirection: 'column', marginTop: '20px' }}>
-                      <iframe src={fullUrl} style={{ width: '100%', flex: 1, border: 'none' }} title={item.name || 'PDF Document'} />
+                      <iframe src={fullUrl} style={{ width: '100%', flex: 1, border: 'none', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)', backgroundColor: '#525659' }} title={item.name || 'PDF Document'} />
                     </div>
                   )}
                   {/* Embedded Image for Print/Export Mode */}
