@@ -646,29 +646,37 @@ export default function CoursePortfolio({ courseInfo, onRefresh, API_BASE, activ
         </div>
 
         {/* General Documents Section */}
-        {renderGroupSection('general', 'Institutional Documents')}
+        {(printMode === 'all' || printMode === 'misc') && (
+          <div>
+            {renderGroupSection('general', 'Institutional Documents')}
+          </div>
+        )}
 
         {/* Coursework Samples Section */}
-        <div className="view-card" style={{ background: 'transparent', border: 'none', boxShadow: 'none', padding: 0 }}>
-          <h2 style={{ fontSize: '1.2rem', marginBottom: '8px' }}>Coursework Student Samples Portfolio</h2>
-          <p style={{ fontSize: '0.825rem', color: 'var(--text-muted)', marginBottom: '16px' }}>
-            Provide folders or scripts containing 3 Best, 3 Medium, and 3 Low student coursework outcomes.
-          </p>
-          {renderGroupSection('cw_best', 'Best CW Samples (3 items)')}
-          {renderGroupSection('cw_med', 'Medium CW Samples (3 items)')}
-          {renderGroupSection('cw_low', 'Low CW Samples (3 items)')}
-        </div>
+        {(printMode === 'all' || printMode === 'coursework') && (
+          <div className="view-card" style={{ background: 'transparent', border: 'none', boxShadow: 'none', padding: 0 }}>
+            <h2 style={{ fontSize: '1.2rem', marginBottom: '8px' }}>Coursework Student Samples Portfolio</h2>
+            <p style={{ fontSize: '0.825rem', color: 'var(--text-muted)', marginBottom: '16px' }}>
+              Provide folders or scripts containing 3 Best, 3 Medium, and 3 Low student coursework outcomes.
+            </p>
+            {renderGroupSection('cw_best', 'Best CW Samples (3 items)')}
+            {renderGroupSection('cw_med', 'Medium CW Samples (3 items)')}
+            {renderGroupSection('cw_low', 'Low CW Samples (3 items)')}
+          </div>
+        )}
 
         {/* Exam Script Samples Section */}
-        <div className="view-card" style={{ background: 'transparent', border: 'none', boxShadow: 'none', padding: 0 }}>
-          <h2 style={{ fontSize: '1.2rem', marginBottom: '8px' }}>Examination Script Samples Portfolio</h2>
-          <p style={{ fontSize: '0.825rem', color: 'var(--text-muted)', marginBottom: '16px' }}>
-            Provide folders or scripts containing 3 Best, 3 Medium, and 3 Low student examination sheets.
-          </p>
-          {renderGroupSection('exam_best', 'Best Examination Scripts (3 items)')}
-          {renderGroupSection('exam_med', 'Medium Examination Scripts (3 items)')}
-          {renderGroupSection('exam_low', 'Low Examination Scripts (3 items)')}
-        </div>
+        {(printMode === 'all' || printMode === 'exam') && (
+          <div className="view-card" style={{ background: 'transparent', border: 'none', boxShadow: 'none', padding: 0 }}>
+            <h2 style={{ fontSize: '1.2rem', marginBottom: '8px' }}>Examination Script Samples Portfolio</h2>
+            <p style={{ fontSize: '0.825rem', color: 'var(--text-muted)', marginBottom: '16px' }}>
+              Provide folders or scripts containing 3 Best, 3 Medium, and 3 Low student examination sheets.
+            </p>
+            {renderGroupSection('exam_best', 'Best Examination Scripts (3 items)')}
+            {renderGroupSection('exam_med', 'Medium Examination Scripts (3 items)')}
+            {renderGroupSection('exam_low', 'Low Examination Scripts (3 items)')}
+          </div>
+        )}
 
       </div>
     </div>
