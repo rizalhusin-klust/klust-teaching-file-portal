@@ -335,24 +335,24 @@ function App() {
     const fullAttendancePdfUrls = attendancePdfUrls.map(url => `${serverUrl}${url}`);
 
     const tabDefs = [
-        { id: 'dashboard', icon: 'dY",', label: 'Cover Page' },
-        { id: 'assessments', icon: 'dY",', label: '2.1 Table of Specification' },
-        { id: 'clo', icon: 'dY",', label: '2.2 CLO Analysis' },
-        { id: 'plo', icon: 'dY",', label: '2.3 PLO Analysis' },
-        { id: 'student_clo', icon: 'dY",', label: '2.4 Student CLO' },
-        { id: 'student_plo', icon: 'dY",', label: '2.5 Student PLO' },
-        { id: 'cqi', icon: 'dY",', label: '2.6 CQI Report' },
-        { id: 'syllabus', icon: 'dY",', label: '3. Course Syllabus' },
-        { id: 'teaching_plan', icon: 'dY",', label: '4. Teaching Plan' },
-        { id: 'time_table', icon: 'dY",', label: '5. Time-Table of Lecturer' },
-        { id: 'attendance', icon: 'dY",', label: '6. Student Monthly Attendance' },
-        { id: 'reports', icon: 'dY",', label: '7. Report by Lecturer' },
-        { id: 'teaching_materials', icon: 'dY",', label: '8. Teaching Materials' },
-        { id: 'final_exam_docs', icon: 'dY",', label: '9. Examination Docs' },
-        { id: 'exam_scripts', icon: 'dY",', label: '10. Examination Scripts' },
-        { id: 'coursework_docs', icon: 'dY",', label: '11. Coursework Docs' },
-        { id: 'coursework_samples', icon: 'dY",', label: '12. Coursework Samples' },
-        { id: 'misc_record', icon: 'dY",', label: '13. Miscellaneous Records' }
+        { id: 'dashboard', icon: '📄', label: 'Cover Page' },
+        { id: 'assessments', icon: '📄', label: '2.1 Table of Specification' },
+        { id: 'clo', icon: '📄', label: '2.2 CLO Analysis' },
+        { id: 'plo', icon: '📄', label: '2.3 PLO Analysis' },
+        { id: 'student_clo', icon: '📄', label: '2.4 Student CLO' },
+        { id: 'student_plo', icon: '📄', label: '2.5 Student PLO' },
+        { id: 'cqi', icon: '📄', label: '2.6 CQI Report' },
+        { id: 'syllabus', icon: '📄', label: '3. Course Syllabus' },
+        { id: 'teaching_plan', icon: '📄', label: '4. Teaching Plan' },
+        { id: 'time_table', icon: '📄', label: '5. Time-Table of Lecturer' },
+        { id: 'attendance', icon: '📄', label: '6. Student Monthly Attendance' },
+        { id: 'reports', icon: '📄', label: '7. Report by Lecturer' },
+        { id: 'teaching_materials', icon: '📄', label: '8. Teaching Materials' },
+        { id: 'final_exam_docs', icon: '📄', label: '9. Examination Docs' },
+        { id: 'exam_scripts', icon: '📄', label: '10. Examination Scripts' },
+        { id: 'coursework_docs', icon: '📄', label: '11. Coursework Docs' },
+        { id: 'coursework_samples', icon: '📄', label: '12. Coursework Samples' },
+        { id: 'misc_record', icon: '📄', label: '13. Miscellaneous Records' }
       ];
 
     const courseCode = courseInfo?.course_code || 'COURSE';
