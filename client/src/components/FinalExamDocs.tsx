@@ -265,14 +265,14 @@ export default function FinalExamDocs({ courseInfo, onRefresh, API_BASE, activeC
                   
                   {/* Embedded PDF for Print/Export Mode */}
                   {isPdf && (
-                    <div className="only-print" style={{ width: '100%', marginTop: '20px', pageBreakInside: 'avoid' }}>
-                      <iframe src={fullUrl} style={{ width: '100%', height: '1000px', border: '1px solid #ccc' }} title={item.name || 'PDF Document'} />
+                    <div className="only-print" style={{ width: '100%', height: '100vh', pageBreakAfter: 'always', breakAfter: 'page', display: 'flex', flexDirection: 'column', marginTop: '20px' }}>
+                      <iframe src={fullUrl} style={{ width: '100%', flex: 1, border: 'none' }} title={item.name || 'PDF Document'} />
                     </div>
                   )}
                   {/* Embedded Image for Print/Export Mode */}
                   {isImg && (
-                    <div className="only-print" style={{ width: '100%', marginTop: '20px', pageBreakInside: 'avoid', textAlign: 'center' }}>
-                      <img src={fullUrl} alt={item.name || 'Image Document'} style={{ maxWidth: '100%', maxHeight: '1000px', objectFit: 'contain' }} />
+                    <div className="only-print" style={{ width: '100%', height: '100vh', pageBreakAfter: 'always', breakAfter: 'page', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', marginTop: '20px' }}>
+                      <img src={fullUrl} alt={item.name || 'Image Document'} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
                     </div>
                   )}
                 </>
