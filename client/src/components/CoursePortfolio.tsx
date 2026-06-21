@@ -571,7 +571,13 @@ export default function CoursePortfolio({ courseInfo, onRefresh, API_BASE, activ
 
       {/* ── Print-Only Portfolio Summary Table ── */}
       <div className="only-print" style={{ background: '#ffffff', color: '#000000' }}>
-        {SECTION_GROUPS.map(grp => (
+        {SECTION_GROUPS.filter(grp => {
+          if (printMode === 'all') return true;
+          if (printMode === 'exam' && grp.keys[0]?.group.startsWith('exam')) return true;
+          if (printMode === 'coursework' && grp.keys[0]?.group.startsWith('cw')) return true;
+          if (printMode === 'misc' && grp.keys[0]?.group === 'general') return true;
+          return false;
+        }).map(grp => (
           <div key={grp.title} style={{ marginBottom: '20px' }}>
             <h3 style={{ fontSize: '0.9rem', fontWeight: 700, color: '#1e3a8a', borderBottom: '1px solid #1e3a8a', paddingBottom: '4px', marginBottom: '6px', textTransform: 'uppercase' }}>
               {grp.title}
