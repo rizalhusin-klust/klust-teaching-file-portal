@@ -304,13 +304,12 @@ export default function MiscDocs({ courseInfo, onRefresh, API_BASE, activeCourse
 
   const getSummaryData = () => {
     const summary = [];
-    const timetableKey = 'lecturer_timetable';
-    const timetableItem = portfolio[timetableKey];
-
-    summary.push({
-      label: 'Lecturer Timetable Schedule',
-      item: timetableItem
-    });
+    for (let i = 1; i <= 5; i++) {
+      summary.push({
+        label: `Miscellaneous Document ${i}`,
+        item: portfolio[`misc_doc_${i}`]
+      });
+    }
     return summary;
   };
 
@@ -374,7 +373,7 @@ export default function MiscDocs({ courseInfo, onRefresh, API_BASE, activeCourse
         </p>
 
         <div className="no-print" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
-          {renderSlotCard('lecturer_timetable', 'Lecturer Timetable Schedule')}
+          {[1, 2, 3, 4, 5].map(i => renderSlotCard(`misc_doc_${i}`, `Miscellaneous Document ${i}`))}
         </div>
       </div>
     );
