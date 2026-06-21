@@ -97,15 +97,14 @@ export default function FinalResultDocs({ courseInfo, onRefresh, API_BASE, activ
             }),
           });
           const data = await res.json();
-          if (res.ok && data.filepath) {
-            const newPortfolio = { ...portfolio, [key]: { type: 'file' as const, value: data.filepath, name: file.name } };
-            setPortfolio(newPortfolio);
-            await updatePortfolioData(newPortfolio);
+          if (res.ok && data.portfolio_data) {
+            setPortfolio(data.portfolio_data);
+            if (onRefresh) onRefresh();
           } else {
             setUploadError(prev => ({ ...prev, [key]: data.error || 'Upload failed' }));
           }
-        } catch (err) {
-          setUploadError(prev => ({ ...prev, [key]: 'Upload error' }));
+        } catch (err: any) {
+          setUploadError(prev => ({ ...prev, [key]: 'Upload error: ' + (err.message || String(err)) }));
         } finally {
           setUploadingKey(null);
         }
@@ -121,6 +120,8 @@ export default function FinalResultDocs({ courseInfo, onRefresh, API_BASE, activ
     }
     e.target.value = '';
   };
+
+  
 
   
 
@@ -286,11 +287,11 @@ export default function FinalResultDocs({ courseInfo, onRefresh, API_BASE, activ
                   padding: '6px'
                 }}
               >
-                {uploadingKey === key ? 'O> Uploading...' : 'dY"  Upload PDF'}
+                {uploadingKey === key ? '⏳ Uploading...' : '📄 Upload PDF'}
               </label>
               {uploadError[key] && (
                 <div style={{ color: 'var(--danger)', fontSize: '0.7rem', marginTop: '4px' }}>
-                  s,? {uploadError[key]}
+                  ⚠️ {uploadError[key]}
                 </div>
               )}
             </div>
