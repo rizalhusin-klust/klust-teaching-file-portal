@@ -814,9 +814,29 @@ body.light-theme .btn-secondary:hover {
   display: none !important;
 }
 
+.export-only {
+  display: none !important;
+}
+
+body.export-html-mode .export-only {
+  display: block !important;
+}
+
+.print-link-only {
+  display: none !important;
+}
+
 @media print {
   .only-print {
     display: block !important;
+  }
+  
+  .print-link-only {
+    display: block !important;
+  }
+  
+  body.export-html-mode .export-only {
+    display: none !important;
   }
   
   .teaching-file-cover-container {

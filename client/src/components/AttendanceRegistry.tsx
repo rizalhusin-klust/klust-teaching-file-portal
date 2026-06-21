@@ -342,14 +342,14 @@ export default function AttendanceRegistry({ students, attendance, onUpdateAtten
 
       {/* ── Student Monthly Attendance PDF Uploads ── */}
       {API_BASE && activeCourseId && (
-        <div className="no-print" style={{
+        <div style={{
           marginTop: '24px',
           padding: '16px',
           background: 'var(--bg-card)',
           border: '1px solid var(--border-color)',
           borderRadius: '8px',
         }}>
-          <h3 style={{ fontWeight: 600, fontSize: '1rem', color: 'var(--text-active)', marginBottom: '16px' }}>
+          <h3 className="no-print" style={{ fontWeight: 600, fontSize: '1rem', color: 'var(--text-active)', marginBottom: '16px' }}>
             📅 Student Monthly Attendance PDFs (Up to 5)
           </h3>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
@@ -359,62 +359,70 @@ export default function AttendanceRegistry({ students, attendance, onUpdateAtten
               const isUploading = uploadingKey === key;
 
               return (
-                <div key={key} style={{
-                  padding: '12px',
-                  background: 'rgba(255,255,255,0.02)',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: '6px'
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text-muted)' }}>Month {i}</span>
-                    {pdf && (
-                      <button
-                        onClick={() => handleResetPdf(key)}
-                        style={{ background: 'transparent', border: 'none', color: 'var(--danger)', fontSize: '0.75rem', cursor: 'pointer' }}
-                      >
-                        ❌ Reset
-                      </button>
+                <div key={key}>
+                  <div className="no-print" style={{
+                    padding: '12px',
+                    background: 'rgba(255,255,255,0.02)',
+                    border: '1px solid var(--border-color)',
+                    borderRadius: '6px'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <span style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text-muted)' }}>Month {i}</span>
+                      {pdf && (
+                        <button
+                          onClick={() => handleResetPdf(key)}
+                          style={{ background: 'transparent', border: 'none', color: 'var(--danger)', fontSize: '0.75rem', cursor: 'pointer' }}
+                        >
+                          ❌ Reset
+                        </button>
+                      )}
+                    </div>
+                    
+                    {pdf ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden' }}>
+                          <span style={{ fontSize: '1rem' }}>📄</span>
+                          <span style={{ fontSize: '0.8rem', color: 'var(--text-active)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                            {pdf.name}
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', gap: '6px' }}>
+                          <a href={pdf.url} target="_blank" rel="noopener noreferrer" className="btn btn-secondary" style={{ flex: 1, padding: '4px', fontSize: '0.75rem', textAlign: 'center', textDecoration: 'none' }}>
+                            👁️ Preview
+                          </a>
+                          <a href={pdf.url} className="btn btn-secondary" style={{ flex: 1, padding: '4px', fontSize: '0.75rem', textAlign: 'center', textDecoration: 'none' }} download>
+                            ⬇️ Download
+                          </a>
+                        </div>
+                      </div>
+                    ) : (
+                      <div>
+                        <input
+                          type="file"
+                          accept="application/pdf"
+                          id={`upload-${key}`}
+                          style={{ display: 'none' }}
+                          onChange={(e) => handleFileUpload(e, key)}
+                        />
+                        <label
+                          htmlFor={`upload-${key}`}
+                          className="btn btn-secondary"
+                          style={{ display: 'block', textAlign: 'center', cursor: 'pointer', fontSize: '0.8rem', padding: '6px' }}
+                        >
+                          {isUploading ? '⌛ Uploading...' : `📤 Upload Month ${i}`}
+                        </label>
+                        {uploadError[key] && (
+                          <div style={{ color: 'var(--danger)', fontSize: '0.7rem', marginTop: '4px', textAlign: 'center' }}>
+                            ⚠️ {uploadError[key]}
+                          </div>
+                        )}
+                      </div>
                     )}
                   </div>
-                  
-                  {pdf ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden' }}>
-                        <span style={{ fontSize: '1rem' }}>📄</span>
-                        <span style={{ fontSize: '0.8rem', color: 'var(--text-active)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
-                          {pdf.name}
-                        </span>
-                      </div>
-                      <div style={{ display: 'flex', gap: '6px' }}>
-                        <a href={pdf.url} target="_blank" rel="noopener noreferrer" className="btn btn-secondary" style={{ flex: 1, padding: '4px', fontSize: '0.75rem', textAlign: 'center', textDecoration: 'none' }}>
-                          👁️ Preview
-                        </a>
-                        <a href={pdf.url} className="btn btn-secondary" style={{ flex: 1, padding: '4px', fontSize: '0.75rem', textAlign: 'center', textDecoration: 'none' }} download>
-                          ⬇️ Download
-                        </a>
-                      </div>
-                    </div>
-                  ) : (
-                    <div>
-                      <input
-                        type="file"
-                        accept="application/pdf"
-                        id={`upload-${key}`}
-                        style={{ display: 'none' }}
-                        onChange={(e) => handleFileUpload(e, key)}
-                      />
-                      <label
-                        htmlFor={`upload-${key}`}
-                        className="btn btn-secondary"
-                        style={{ display: 'block', textAlign: 'center', cursor: 'pointer', fontSize: '0.8rem', padding: '6px' }}
-                      >
-                        {isUploading ? '⌛ Uploading...' : `📤 Upload Month ${i}`}
-                      </label>
-                      {uploadError[key] && (
-                        <div style={{ color: 'var(--danger)', fontSize: '0.7rem', marginTop: '4px', textAlign: 'center' }}>
-                          ⚠️ {uploadError[key]}
-                        </div>
-                      )}
+                  {/* Hyperlink for Print Mode */}
+                  {pdf && (
+                    <div className="print-link-only" style={{ marginTop: '10px' }}>
+                      📄 <strong>Attendance Month {i}:</strong> <a href={pdf.url} style={{ color: 'blue', textDecoration: 'underline' }}>{pdf.url}</a>
                     </div>
                   )}
                 </div>

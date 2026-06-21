@@ -358,7 +358,8 @@ function App() {
 
     // Panel 1: LMS Results PDF (special – PDF iframe)
     const lmsPanelContent = fullPdfUrl
-      ? `<iframe src="${fullPdfUrl}" style="width:100%;height:100vh;page-break-after:always;break-after:page;border:none;border-radius:8px;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);background-color:#525659;" title="Detail of Student Result (LMS)"></iframe>`
+      ? `<iframe class="export-only" src="${fullPdfUrl}" style="width:100%;height:100vh;page-break-after:always;break-after:page;border:none;border-radius:8px;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);background-color:#525659;" title="Detail of Student Result (LMS)"></iframe>
+         <div class="print-link-only" style="margin-top: 20px;">📄 <strong>Detail of Student Result (LMS):</strong> <a href="${fullPdfUrl}" style="color: blue; text-decoration: underline;">${fullPdfUrl}</a></div>`
       : `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:calc(100vh - 120px);text-align:center;color:#475569;padding:20px;box-sizing:border-box;">
           <div style="font-size:4rem;margin-bottom:16px;">📄</div>
           <h2 style="font-size:1.5rem;font-weight:700;color:#1e293b;margin-bottom:8px;">No Result PDF Uploaded</h2>
@@ -409,7 +410,8 @@ function App() {
 
     // Panel 7: Timetable of Lecturer (special – PDF iframe)
     const timetablePanelContent = fullTimetableUrl
-      ? `<iframe src="${fullTimetableUrl}" style="width:100%;height:100vh;page-break-after:always;break-after:page;border:none;border-radius:8px;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);background-color:#525659;" title="Timetable of Lecturer"></iframe>`
+      ? `<iframe class="export-only" src="${fullTimetableUrl}" style="width:100%;height:100vh;page-break-after:always;break-after:page;border:none;border-radius:8px;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);background-color:#525659;" title="Timetable of Lecturer"></iframe>
+         <div class="print-link-only" style="margin-top: 20px;">📄 <strong>Timetable of Lecturer:</strong> <a href="${fullTimetableUrl}" style="color: blue; text-decoration: underline;">${fullTimetableUrl}</a></div>`
       : `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:calc(100vh - 120px);text-align:center;color:#475569;padding:20px;box-sizing:border-box;">
           <div style="font-size:4rem;margin-bottom:16px;">🗓️</div>
           <h2 style="font-size:1.5rem;font-weight:700;color:#1e293b;margin-bottom:8px;">No Timetable Uploaded</h2>
@@ -426,7 +428,7 @@ function App() {
     // Panel 8: Student Monthly Attendance (sectionHtmls[6])
     const attendancePdfHtml = fullAttendancePdfUrls.length > 0
       ? `<div style="margin-top: 32px;"><h3 style="font-size:1.25rem;font-weight:600;margin-bottom:16px;">Student Monthly Attendance PDFs</h3>` + 
-        fullAttendancePdfUrls.map((url, idx) => `<div style="margin-bottom: 24px; height: 100vh; width: 100%; display: flex; flex-direction: column; page-break-after: always; break-after: page;"><h4 style="font-size:1rem;color:#475569;margin-bottom:8px;">Month ${idx + 1}</h4><iframe src="${url}" style="width:100%;flex:1;border:none;border-radius:8px;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);background-color:#525659;" title="Student Monthly Attendance Month ${idx + 1}"></iframe></div>`).join('') +
+        fullAttendancePdfUrls.map((url, idx) => `<div class="export-only" style="margin-bottom: 24px; height: 100vh; width: 100%; display: flex; flex-direction: column; page-break-after: always; break-after: page;"><h4 style="font-size:1rem;color:#475569;margin-bottom:8px;">Month ${idx + 1}</h4><iframe src="${url}" style="width:100%;flex:1;border:none;border-radius:8px;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);background-color:#525659;" title="Student Monthly Attendance Month ${idx + 1}"></iframe></div><div class="print-link-only" style="margin-bottom: 10px;">📄 <strong>Attendance Month ${idx + 1}:</strong> <a href="${url}" style="color: blue; text-decoration: underline;">${url}</a></div>`).join('') +
         `</div>`
       : '';
     panels.push(
@@ -725,7 +727,7 @@ function App() {
     }
   </style>
 </head>
-<body>
+<body class="export-html-mode">
   <nav class="sidebar">
     <div class="sidebar-header">
       <div class="brand">

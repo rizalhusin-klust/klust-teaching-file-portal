@@ -263,16 +263,26 @@ export default function FinalExamDocs({ courseInfo, onRefresh, API_BASE, activeC
                     )}
                   </div>
                   
-                  {/* Embedded PDF for Print/Export Mode */}
+                  {/* Embedded PDF for Export Mode */}
                   {isPdf && (
-                    <div className="only-print" style={{ width: '100%', height: '100vh', pageBreakAfter: 'always', breakAfter: 'page', display: 'flex', flexDirection: 'column', marginTop: '20px' }}>
+                    <div className="export-only" style={{ width: '100%', height: '100vh', pageBreakAfter: 'always', breakAfter: 'page', display: 'flex', flexDirection: 'column', marginTop: '20px' }}>
                       <iframe src={fullUrl} style={{ width: '100%', flex: 1, border: 'none', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)', backgroundColor: '#525659' }} title={item.name || 'PDF Document'} />
                     </div>
                   )}
-                  {/* Embedded Image for Print/Export Mode */}
+                  {/* Embedded Image for Export Mode */}
                   {isImg && (
-                    <div className="only-print" style={{ width: '100%', height: '100vh', pageBreakAfter: 'always', breakAfter: 'page', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', marginTop: '20px' }}>
+                    <div className="export-only" style={{ width: '100%', height: '100vh', pageBreakAfter: 'always', breakAfter: 'page', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', marginTop: '20px' }}>
                       <img src={fullUrl} alt={item.name || 'Image Document'} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                    </div>
+                  )}
+                  
+                  {/* Hyperlink for Print Mode */}
+                  {(isPdf || isImg || item.type === 'link') && (
+                    <div className="print-link-only" style={{ marginTop: '10px' }}>
+                      {item.type === 'link' ? '🔗' : '📄'} <strong>{item.name || (item.type === 'link' ? 'Provided Link' : 'Uploaded File')}:</strong>{' '}
+                      <a href={item.type === 'link' ? item.value : fullUrl} style={{ color: 'blue', textDecoration: 'underline' }}>
+                        {item.type === 'link' ? item.value : fullUrl}
+                      </a>
                     </div>
                   )}
                 </>

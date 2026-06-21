@@ -343,12 +343,16 @@ export default function SyllabusSetup({ cloPloMappings, clos: closProp, plos: pl
                 </a>
               </div>
             </div>
-            <div className="only-print" style={{ width: '100%', height: '100vh', pageBreakAfter: 'always', breakAfter: 'page', display: 'flex', flexDirection: 'column', marginTop: '20px' }}>
+            <div className="export-only" style={{ width: '100%', height: '100vh', pageBreakAfter: 'always', breakAfter: 'page', display: 'flex', flexDirection: 'column', marginTop: '20px' }}>
               <iframe
                 src={`${API_BASE.replace('/api', '')}${courseInfo.table4_path}`}
                 style={{ width: '100%', flex: 1, border: 'none', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)', backgroundColor: '#525659' }}
                 title="Table 4 PDF Document"
               />
+            </div>
+            
+            <div className="print-link-only" style={{ marginTop: '10px' }}>
+              📄 <strong>Syllabus Outline PDF:</strong> <a href={`${API_BASE.replace('/api', '')}${courseInfo.table4_path}`} style={{ color: 'blue', textDecoration: 'underline' }}>{`${API_BASE.replace('/api', '')}${courseInfo.table4_path}`}</a>
             </div>
           </div>
         ) : (
