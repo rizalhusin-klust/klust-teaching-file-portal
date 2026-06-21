@@ -311,6 +311,7 @@ function App() {
     const tabDefs = [
         { id: 'dashboard', icon: '📄', label: 'Cover Page' },
         { id: 'final_result', icon: '📄', label: '1.0 Final Result' },
+        { id: 'assessments', icon: '📄', label: '2.0 Table of Specification' },
         { id: 'clo', icon: '📄', label: '2.1 CLO Analysis' },
         { id: 'plo', icon: '📄', label: '2.2 PLO Analysis' },
         { id: 'student_clo', icon: '📄', label: '2.3 Student CLO Breakdown' },
@@ -1196,8 +1197,8 @@ function App() {
           <FinalResultDocs courseInfo={courseInfo} onRefresh={() => {}} API_BASE={API_BASE} activeCourseId={activeCourseId} programName={programName} />
         </div>
 
-        {/* 2.1 Table of Specification */}
-        <PrintSeparator number={"2.1"} title={"Table of Specification"} />
+        {/* 2.0 Table of Specification */}
+        <PrintSeparator number={"2.0"} title={"Table of Specification"} />
         <div className="print-all-section">
           <PrintHeader title="Table of Specification" courseInfo={courseInfo} programName={programName} />
           <AssessmentSetup
