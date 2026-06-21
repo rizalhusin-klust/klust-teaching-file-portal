@@ -13,15 +13,16 @@ export default function Dashboard({ API_BASE, gradesData, obeMetrics, courseInfo
 
   useEffect(() => {
     const fetchStats = async () => {
+      if (!courseInfo?.id) return;
       try {
-        const res = await fetch(`${API_BASE}/dashboard`);
+        const res = await fetch(`${API_BASE}/dashboard?course_id=${courseInfo.id}`);
         setStats(await res.json());
       } catch (err) {
         console.error('Error fetching dashboard stats:', err);
       }
     };
     fetchStats();
-  }, [gradesData, obeMetrics, API_BASE]);
+  }, [gradesData, obeMetrics, API_BASE, courseInfo]);
 
   const [checklist, setChecklist] = useState([
     { no: 1, details: "Details of Students' Results", tick: true, hardcopy: false, softcopy: true },
