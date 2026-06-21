@@ -127,6 +127,20 @@ export type PlannedAssessment = {
 
 const API_BASE = 'http://localhost:3001/api';
 
+
+const PrintSeparator = ({ number, title }: { number: number | string; title: string }) => (
+  <div className="print-all-section" style={{ border: 'none', boxShadow: 'none', width: '100%', maxWidth: '100%', height: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-end', textAlign: 'right', margin: 0, padding: '4rem', boxSizing: 'border-box' }}>
+    <div style={{ fontFamily: '"Segoe UI", -apple-system, sans-serif', fontWeight: 900, color: 'transparent', WebkitTextStroke: '3px black', fontSize: '9rem', lineHeight: 1, margin: 0, letterSpacing: '-0.02em' }}>
+      {number}
+    </div>
+    <div style={{ width: '100%', height: '2px', backgroundColor: 'black', marginTop: '1rem', marginBottom: '0.75rem' }}></div>
+    <div style={{ fontFamily: '"SegoeUI-Light", "Segoe UI Light", "Segoe UI", -apple-system, sans-serif', fontSize: '40px', fontWeight: 300, lineHeight: 1.2, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'black', marginTop: '0.25rem', marginBottom: '0.25rem', maxWidth: '100%' }}>
+      {title}
+    </div>
+    <div style={{ width: '100%', height: '2px', backgroundColor: 'black', marginTop: '0.75rem', marginBottom: 0 }}></div>
+  </div>
+);
+
 function App() {
   const [activeTab, setActiveTab] = useState<string>('setup');
   const [courses, setCourses] = useState<CourseInfo[]>([]);
@@ -1249,10 +1263,7 @@ function App() {
           />
         </div>
 
-        <div className="print-all-section" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', textAlign: 'center' }}>
-          <h1 style={{ fontSize: '6rem', color: '#1e3a8a', marginBottom: '1rem' }}>1</h1>
-          <h2 style={{ fontSize: '3rem', color: '#334155', textTransform: 'uppercase' }}>Details of Students' Results</h2>
-        </div>
+        <PrintSeparator number={1} title={"Details of Students' Results"} />
         <div className="print-all-section">
           <PrintHeader title="Table of Specification" courseInfo={courseInfo} programName={programName} />
           <AssessmentSetup
@@ -1268,10 +1279,7 @@ function App() {
           />
         </div>
 
-        <div className="print-all-section" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', textAlign: 'center' }}>
-          <h1 style={{ fontSize: '6rem', color: '#1e3a8a', marginBottom: '1rem' }}>2</h1>
-          <h2 style={{ fontSize: '3rem', color: '#334155', textTransform: 'uppercase' }}>OBE Assessment</h2>
-        </div>
+        <PrintSeparator number={2} title={"OBE Assessment"} />
         <div className="print-all-section">
           <PrintHeader title="OBE CLO / PLO Achievement" courseInfo={courseInfo} programName={programName} />
           <ObeDashboard
@@ -1287,10 +1295,7 @@ function App() {
           />
         </div>
 
-        <div className="print-all-section" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', textAlign: 'center' }}>
-          <h1 style={{ fontSize: '6rem', color: '#1e3a8a', marginBottom: '1rem' }}>3</h1>
-          <h2 style={{ fontSize: '3rem', color: '#334155', textTransform: 'uppercase' }}>Course Syllabus</h2>
-        </div>
+        <PrintSeparator number={3} title={"Course Syllabus"} />
         <div className="print-all-section">
           <PrintHeader title="Syllabus Outline" courseInfo={courseInfo} programName={programName} />
           <SyllabusSetup
@@ -1304,10 +1309,7 @@ function App() {
           />
         </div>
 
-        <div className="print-all-section" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', textAlign: 'center' }}>
-          <h1 style={{ fontSize: '6rem', color: '#1e3a8a', marginBottom: '1rem' }}>4</h1>
-          <h2 style={{ fontSize: '3rem', color: '#334155', textTransform: 'uppercase' }}>Teaching Plan</h2>
-        </div>
+        <PrintSeparator number={4} title={"Teaching Plan"} />
         <div className="print-all-section">
           <PrintHeader title="Teaching Plan" courseInfo={courseInfo} programName={programName} />
           <TeachingPlan
@@ -1324,15 +1326,9 @@ function App() {
           />
         </div>
 
-        <div className="print-all-section" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', textAlign: 'center' }}>
-          <h1 style={{ fontSize: '6rem', color: '#1e3a8a', marginBottom: '1rem' }}>5</h1>
-          <h2 style={{ fontSize: '3rem', color: '#334155', textTransform: 'uppercase' }}>Time-Table of Lecturer</h2>
-        </div>
+        <PrintSeparator number={5} title={"Time-Table of Lecturer"} />
 
-        <div className="print-all-section" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', textAlign: 'center' }}>
-          <h1 style={{ fontSize: '6rem', color: '#1e3a8a', marginBottom: '1rem' }}>6</h1>
-          <h2 style={{ fontSize: '3rem', color: '#334155', textTransform: 'uppercase' }}>Student Monthly Attendance</h2>
-        </div>
+        <PrintSeparator number={6} title={"Student Monthly Attendance"} />
         <div className="print-all-section">
           <PrintHeader title="Student Monthly Attendance" courseInfo={courseInfo} programName={programName} />
           <AttendanceRegistry
@@ -1345,10 +1341,7 @@ function App() {
           />
         </div>
 
-        <div className="print-all-section" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', textAlign: 'center' }}>
-          <h1 style={{ fontSize: '6rem', color: '#1e3a8a', marginBottom: '1rem' }}>7</h1>
-          <h2 style={{ fontSize: '3rem', color: '#334155', textTransform: 'uppercase' }}>Report by Lecturer</h2>
-        </div>
+        <PrintSeparator number={7} title={"Report by Lecturer"} />
         <div className="print-all-section">
           <PrintHeader title="Weekly Reports (KLUST F28)" courseInfo={courseInfo} programName={programName} />
           <LecturerReport
@@ -1360,10 +1353,7 @@ function App() {
           />
         </div>
 
-        <div className="print-all-section" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', textAlign: 'center' }}>
-          <h1 style={{ fontSize: '6rem', color: '#1e3a8a', marginBottom: '1rem' }}>8</h1>
-          <h2 style={{ fontSize: '3rem', color: '#334155', textTransform: 'uppercase' }}>Teaching Materials</h2>
-        </div>
+        <PrintSeparator number={8} title={"Teaching Materials"} />
         <div className="print-all-section">
           <PrintHeader title="Teaching Materials" courseInfo={courseInfo} programName={programName} />
           <TeachingMaterials
@@ -1374,10 +1364,7 @@ function App() {
           />
         </div>
 
-        <div className="print-all-section" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', textAlign: 'center' }}>
-          <h1 style={{ fontSize: '6rem', color: '#1e3a8a', marginBottom: '1rem' }}>9</h1>
-          <h2 style={{ fontSize: '3rem', color: '#334155', textTransform: 'uppercase' }}>Moderated Final Exam with Marking Scheme</h2>
-        </div>
+        <PrintSeparator number={9} title={"Moderated Final Exam with Marking Scheme"} />
         <div className="print-all-section">
           <FinalExamDocs
             courseInfo={courseInfo}
@@ -1388,15 +1375,9 @@ function App() {
           />
         </div>
 
-          <div className="print-all-section" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', textAlign: 'center' }}>
-            <h1 style={{ fontSize: '6rem', color: '#1e3a8a', marginBottom: '1rem' }}>10</h1>
-            <h2 style={{ fontSize: '3rem', color: '#334155', textTransform: 'uppercase' }}>Final Exam Scripts</h2>
-          </div>
+          <PrintSeparator number={10} title={"Final Exam Scripts"} />
 
-          <div className="print-all-section" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', textAlign: 'center' }}>
-            <h1 style={{ fontSize: '6rem', color: '#1e3a8a', marginBottom: '1rem' }}>11</h1>
-            <h2 style={{ fontSize: '3rem', color: '#334155', textTransform: 'uppercase' }}>Coursework with Marking Schemes</h2>
-          </div>
+          <PrintSeparator number={11} title={"Coursework with Marking Schemes"} />
           <div className="print-all-section">
             <CourseworkDocs
               courseInfo={courseInfo}
@@ -1407,15 +1388,9 @@ function App() {
             />
           </div>
 
-          <div className="print-all-section" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', textAlign: 'center' }}>
-            <h1 style={{ fontSize: '6rem', color: '#1e3a8a', marginBottom: '1rem' }}>12</h1>
-            <h2 style={{ fontSize: '3rem', color: '#334155', textTransform: 'uppercase' }}>Samples of Student Coursework</h2>
-          </div>
+          <PrintSeparator number={12} title={"Samples of Student Coursework"} />
 
-          <div className="print-all-section" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', textAlign: 'center' }}>
-            <h1 style={{ fontSize: '6rem', color: '#1e3a8a', marginBottom: '1rem' }}>13</h1>
-            <h2 style={{ fontSize: '3rem', color: '#334155', textTransform: 'uppercase' }}>Miscellaneous Records</h2>
-          </div>
+          <PrintSeparator number={13} title={"Miscellaneous Records"} />
           <div className="print-all-section">
             <PrintHeader title="Course Portfolio" courseInfo={courseInfo} programName={programName} />
             <CoursePortfolio
