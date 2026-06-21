@@ -145,7 +145,6 @@ const PrintSeparator = ({ number, title }: { number: number | string; title: str
 function App() {
   const [activeTab, setActiveTab] = useState<string>('setup');
   const [isObeMenuOpen, setIsObeMenuOpen] = useState<boolean>(true);
-  const [activeObeSubTab, setActiveObeSubTab] = useState<'clo' | 'plo' | 'student-clo' | 'student-plo' | 'cqi'>('clo');
   const [courses, setCourses] = useState<CourseInfo[]>([]);
   const [activeCourseId, setActiveCourseId] = useState<number | null>(null);
   const [courseInfo, setCourseInfo] = useState<CourseInfo | null>(null);
@@ -1039,28 +1038,8 @@ function App() {
                   </div>
                 </li>
                 <li>
-                  <div className={`nav-item ${activeTab === 'obe' && activeObeSubTab === 'clo' ? 'active' : ''}`} onClick={() => { setActiveTab('obe'); setActiveObeSubTab('clo'); }} style={{ paddingLeft: '42px', fontSize: '0.78rem', minHeight: '34px', opacity: 0.85 }}>
-                    <span className="nav-icon" style={{ fontSize: '0.8rem' }}>↳</span> CLO Analysis
-                  </div>
-                </li>
-                <li>
-                  <div className={`nav-item ${activeTab === 'obe' && activeObeSubTab === 'plo' ? 'active' : ''}`} onClick={() => { setActiveTab('obe'); setActiveObeSubTab('plo'); }} style={{ paddingLeft: '42px', fontSize: '0.78rem', minHeight: '34px', opacity: 0.85 }}>
-                    <span className="nav-icon" style={{ fontSize: '0.8rem' }}>↳</span> PLO Analysis
-                  </div>
-                </li>
-                <li>
-                  <div className={`nav-item ${activeTab === 'obe' && activeObeSubTab === 'student-clo' ? 'active' : ''}`} onClick={() => { setActiveTab('obe'); setActiveObeSubTab('student-clo'); }} style={{ paddingLeft: '42px', fontSize: '0.78rem', minHeight: '34px', opacity: 0.85 }}>
-                    <span className="nav-icon" style={{ fontSize: '0.8rem' }}>↳</span> Student CLO
-                  </div>
-                </li>
-                <li>
-                  <div className={`nav-item ${activeTab === 'obe' && activeObeSubTab === 'student-plo' ? 'active' : ''}`} onClick={() => { setActiveTab('obe'); setActiveObeSubTab('student-plo'); }} style={{ paddingLeft: '42px', fontSize: '0.78rem', minHeight: '34px', opacity: 0.85 }}>
-                    <span className="nav-icon" style={{ fontSize: '0.8rem' }}>↳</span> Student PLO
-                  </div>
-                </li>
-                <li>
-                  <div className={`nav-item ${activeTab === 'obe' && activeObeSubTab === 'cqi' ? 'active' : ''}`} onClick={() => { setActiveTab('obe'); setActiveObeSubTab('cqi'); }} style={{ paddingLeft: '42px', fontSize: '0.78rem', minHeight: '34px', opacity: 0.85 }}>
-                    <span className="nav-icon" style={{ fontSize: '0.8rem' }}>↳</span> CQI Report
+                  <div className={`nav-item ${activeTab === 'obe' ? 'active' : ''}`} onClick={() => setActiveTab('obe')} style={{ paddingLeft: '42px', fontSize: '0.78rem', minHeight: '34px', opacity: 0.85 }}>
+                    <span className="nav-icon" style={{ fontSize: '0.8rem' }}>↳</span> Analysis
                   </div>
                 </li>
               </ul>

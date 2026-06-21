@@ -13,10 +13,9 @@ type ObeDashboardProps = {
   activeCourseId?: number | null;
   onRefresh?: () => void;
   activeSubTab?: 'clo' | 'plo' | 'student-clo' | 'student-plo' | 'cqi';
-  hideInternalTabs?: boolean;
 };
 
-export default function ObeDashboard({ assessments,  obeMetrics, gradesData, isPrintMode, courseInfo, API_BASE, activeCourseId, onRefresh, activeSubTab: externalSubTab, hideInternalTabs }: ObeDashboardProps) {
+export default function ObeDashboard({ assessments,  obeMetrics, gradesData, isPrintMode, courseInfo, API_BASE, activeCourseId, onRefresh, activeSubTab: externalSubTab }: ObeDashboardProps) {
   const [internalSubTab, setInternalSubTab] = useState<'clo' | 'plo' | 'student-clo' | 'student-plo' | 'cqi'>('clo');
   const activeSubTab = externalSubTab || internalSubTab;
   const setActiveSubTab = setInternalSubTab;
@@ -765,7 +764,7 @@ export default function ObeDashboard({ assessments,  obeMetrics, gradesData, isP
       ) : (
         <>
           {/* Screen Mode: Sub tabs nav */}
-            {!hideInternalTabs && <div className="no-print" style={{ display: 'flex', gap: '10px', borderBottom: '1px solid var(--border-color)', paddingBottom: '10px' }}>
+            <div className="no-print" style={{ display: 'flex', gap: '10px', borderBottom: '1px solid var(--border-color)', paddingBottom: '10px' }}>
             <button className={`btn ${activeSubTab === 'clo' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setActiveSubTab('clo')}>
               📊 CLO Analysis
             </button>
@@ -781,9 +780,9 @@ export default function ObeDashboard({ assessments,  obeMetrics, gradesData, isP
             <button className={`btn ${activeSubTab === 'cqi' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setActiveSubTab('cqi')}>
               📈 CQI Report
             </button>
-            </div>}
+            </div>
 
-            {!isPrintMode && activeSubTab !== 'cqi' && (!hideInternalTabs) && (
+            {!isPrintMode && activeSubTab !== 'cqi' && (
             <div className="only-print" style={{ marginBottom: '20px' }}>
               <PrintHeader title="OBE Assessment" courseInfo={courseInfo || null} />
             </div>
