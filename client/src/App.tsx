@@ -1017,11 +1017,6 @@ function App() {
             </div>
           </li>
           <li>
-            <div className={`nav-item ${activeTab === 'assessments' ? 'active' : ''}`} onClick={() => setActiveTab('assessments')}>
-              <span className="nav-icon">📑</span> Table of Specification
-            </div>
-          </li>
-          <li>
             <div className={`nav-item ${activeTab === 'marks' ? 'active' : ''}`} onClick={() => setActiveTab('marks')}>
               <span className="nav-icon">📝</span> Marks Entry
             </div>
@@ -1030,6 +1025,14 @@ function App() {
             <div className={`nav-item ${activeTab === 'obe' ? 'active' : ''}`} onClick={() => setActiveTab('obe')}>
               <span className="nav-icon">🎯</span> OBE Assessment
             </div>
+            {/* Submenu for OBE Assessment */}
+            <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+              <li>
+                <div className={`nav-item ${activeTab === 'assessments' ? 'active' : ''}`} onClick={() => setActiveTab('assessments')} style={{ paddingLeft: '42px', fontSize: '0.78rem', minHeight: '34px', opacity: 0.85 }}>
+                  <span className="nav-icon" style={{ fontSize: '0.8rem' }}>↳</span> Table of Specification
+                </div>
+              </li>
+            </ul>
           </li>
           <li>
             <div className={`nav-item ${activeTab === 'attendance' ? 'active' : ''}`} onClick={() => setActiveTab('attendance')}>
