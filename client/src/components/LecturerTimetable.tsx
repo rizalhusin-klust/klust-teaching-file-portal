@@ -82,29 +82,47 @@ export default function LecturerTimetable({ courseInfo, onRefresh, API_BASE, act
     setUploadingKey(key);
     setUploadError(prev => ({ ...prev, [key]: '' }));
 
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('course_id', String(activeCourseId));
-
     try {
-      const res = await fetch(`${API_BASE}/upload`, {
-        method: 'POST',
-        body: formData
-      });
-      const data = await res.json();
-      if (res.ok && data.filepath) {
-        const newPortfolio = { ...portfolio, [key]: { type: 'file' as const, value: data.filepath, name: file.name } };
-        setPortfolio(newPortfolio);
-        await updatePortfolioData(newPortfolio);
-      } else {
-        setUploadError(prev => ({ ...prev, [key]: data.error || 'Upload failed' }));
-      }
-    } catch (err) {
-      setUploadError(prev => ({ ...prev, [key]: 'Upload error' }));
-    } finally {
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64 = reader.result as string;
+        try {
+          const res = await fetch(`${API_BASE}/courses/${activeCourseId}/upload-portfolio`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              key,
+              fileName: file.name,
+              fileBase64: base64
+            }),
+          });
+          const data = await res.json();
+          if (res.ok && data.filepath) {
+            const newPortfolio = { ...portfolio, [key]: { type: 'file' as const, value: data.filepath, name: file.name } };
+            setPortfolio(newPortfolio);
+            await updatePortfolioData(newPortfolio);
+          } else {
+            setUploadError(prev => ({ ...prev, [key]: data.error || 'Upload failed' }));
+          }
+        } catch (err) {
+          setUploadError(prev => ({ ...prev, [key]: 'Upload error' }));
+        } finally {
+          setUploadingKey(null);
+        }
+      };
+      reader.onerror = () => {
+        setUploadError(prev => ({ ...prev, [key]: 'FileReader error.' }));
+        setUploadingKey(null);
+      };
+      reader.readAsDataURL(file);
+    } catch {
+      setUploadError(prev => ({ ...prev, [key]: 'Exception occurred.' }));
       setUploadingKey(null);
     }
+    e.target.value = '';
   };
+
+  
 
   const handleRemove = async (key: string) => {
     const newPortfolio = { ...portfolio };
