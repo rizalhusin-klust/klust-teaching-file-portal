@@ -336,6 +336,7 @@ function App() {
 
     const tabDefs = [
         { id: 'dashboard', icon: '📄', label: 'Cover Page' },
+        { id: 'final_result', icon: '📄', label: '1.0 Final Result' },
         { id: 'assessments', icon: '📄', label: '2.1 Table of Specification' },
         { id: 'clo', icon: '📄', label: '2.2 CLO Analysis' },
         { id: 'plo', icon: '📄', label: '2.3 PLO Analysis' },
@@ -1320,6 +1321,7 @@ function App() {
         `}</style>
 
         
+        
         {/* Document separator label */}
         <div style={{ display: 'none' }}>Print All: {courseInfo?.course_code}</div>
 
@@ -1333,8 +1335,14 @@ function App() {
           />
         </div>
 
+        {/* 1.0 Final Result */}
+        <PrintSeparator number={"1.0"} title={"Final Result"} />
+        <div className="print-all-section">
+          <FinalResultDocs courseInfo={courseInfo} onRefresh={() => {}} API_BASE={API_BASE} activeCourseId={activeCourseId} programName={programName} />
+        </div>
+
         {/* 2.1 Table of Specification */}
-        <PrintSeparator number={2.1} title={"Table of Specification"} />
+        <PrintSeparator number={"2.1"} title={"Table of Specification"} />
         <div className="print-all-section">
           <PrintHeader title="Table of Specification" courseInfo={courseInfo} programName={programName} />
           <AssessmentSetup
@@ -1351,7 +1359,7 @@ function App() {
         </div>
 
         {/* 2.2 CLO Analysis */}
-        <PrintSeparator number={2.2} title={"CLO Analysis"} />
+        <PrintSeparator number={"2.2"} title={"CLO Analysis"} />
         <div className="print-all-section">
           <PrintHeader title="CLO Analysis" courseInfo={courseInfo} programName={programName} />
           <ObeDashboard
@@ -1369,7 +1377,7 @@ function App() {
         </div>
 
         {/* 2.3 PLO Analysis */}
-        <PrintSeparator number={2.3} title={"PLO Analysis"} />
+        <PrintSeparator number={"2.3"} title={"PLO Analysis"} />
         <div className="print-all-section">
           <PrintHeader title="PLO Analysis" courseInfo={courseInfo} programName={programName} />
           <ObeDashboard
@@ -1387,7 +1395,7 @@ function App() {
         </div>
 
         {/* 2.4 Student CLO */}
-        <PrintSeparator number={2.4} title={"Student CLO Breakdown"} />
+        <PrintSeparator number={"2.4"} title={"Student CLO Breakdown"} />
         <div className="print-all-section">
           <PrintHeader title="Student CLO Breakdown" courseInfo={courseInfo} programName={programName} />
           <ObeDashboard
@@ -1405,7 +1413,7 @@ function App() {
         </div>
 
         {/* 2.5 Student PLO */}
-        <PrintSeparator number={2.5} title={"Student PLO Breakdown"} />
+        <PrintSeparator number={"2.5"} title={"Student PLO Breakdown"} />
         <div className="print-all-section">
           <PrintHeader title="Student PLO Breakdown" courseInfo={courseInfo} programName={programName} />
           <ObeDashboard
@@ -1423,7 +1431,7 @@ function App() {
         </div>
 
         {/* 2.6 CQI Report */}
-        <PrintSeparator number={2.6} title={"CQI Report"} />
+        <PrintSeparator number={"2.6"} title={"CQI Report"} />
         <div className="print-all-section">
           <ObeDashboard
             assessments={assessments}
