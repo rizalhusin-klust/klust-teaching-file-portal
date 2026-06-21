@@ -129,7 +129,7 @@ export type PlannedAssessment = {
   weightage: number;
 };
 
-const API_BASE = 'http://localhost:3001/api';
+const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
 
 const PrintSeparator = ({ number, title }: { number: number | string; title: string }) => (
