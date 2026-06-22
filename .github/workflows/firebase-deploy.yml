@@ -37,7 +37,7 @@ jobs:
           echo "APP_PASSWORD=${{ secrets.APP_PASSWORD }}" >> .env
 
       - name: Deploy to Firebase
-        uses: w9jds/firebase-action@v2.0.4
+        uses: w9jds/firebase-action@v2.2.1
         with:
           args: deploy
         env:
