@@ -1,6 +1,5 @@
 import JSZip from 'jszip';
 import { useState, useEffect, useRef } from 'react';
-import { supabase } from './supabaseClient';
 import Dashboard from './components/Dashboard';
 import Roster from './components/Roster';
 import MainTables from './components/MainTables';
@@ -152,7 +151,7 @@ function App() {
   const [isObeMenuOpen, setIsObeMenuOpen] = useState<boolean>(true);
   const [isPlanMenuOpen, setIsPlanMenuOpen] = useState<boolean>(true);
   const [isCourseworkMenuOpen, setIsCourseworkMenuOpen] = useState<boolean>(true);
-  const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
+  const [token, setToken] = useState<string | null>('bypass-token');
   const [isExamMenuOpen, setIsExamMenuOpen] = useState<boolean>(true);
   const [courses, setCourses] = useState<CourseInfo[]>([]);
   const [activeCourseId, setActiveCourseId] = useState<number | null>(null);
@@ -184,72 +183,6 @@ function App() {
     return localStorage.getItem('sidebarCollapsed') === 'true';
   });
 
-  const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'success' | 'error'>('idle');
-  const [lastSyncTime, setLastSyncTime] = useState<string | null>(localStorage.getItem('lastSyncTime'));
-
-  // Supabase Auth listener
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        setToken(session.access_token);
-        localStorage.setItem('token', session.access_token);
-      }
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) {
-        setToken(session.access_token);
-        localStorage.setItem('token', session.access_token);
-      } else {
-        setToken(null);
-        localStorage.removeItem('token');
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  // Global fetch wrapper to inject Supabase JWT
-  useEffect(() => {
-    const originalFetch = window.fetch;
-    window.fetch = async (input, init) => {
-      const token = localStorage.getItem('token');
-      const urlStr = typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
-      const isApiCall = urlStr.includes('/api/') || urlStr.includes(API_BASE);
-
-      if (token && isApiCall) {
-        init = init || {};
-        init.headers = init.headers || {};
-        if (init.headers instanceof Headers) {
-          init.headers.set('Authorization', `Bearer ${token}`);
-        } else if (Array.isArray(init.headers)) {
-          init.headers.push(['Authorization', `Bearer ${token}`]);
-        } else {
-          // @ts-ignore
-          init.headers['Authorization'] = `Bearer ${token}`;
-        }
-      }
-      
-      const response = await originalFetch(input, init);
-
-      // If token is invalid or expired, force logout
-      if (isApiCall && (response.status === 401 || response.status === 403)) {
-        console.warn('Authentication token expired or invalid, logging out.');
-        localStorage.removeItem('token');
-        setToken(null);
-        // Return dummy empty response to prevent JSON parsing crashes
-        return new Response(JSON.stringify([]), {
-          status: 200,
-          headers: { 'Content-Type': 'application/json' }
-        });
-      }
-
-      return response;
-    };
-    return () => {
-      window.fetch = originalFetch;
-    };
-  }, [API_BASE]);
 
   useEffect(() => {
     if (theme === 'light') {
@@ -377,13 +310,6 @@ function App() {
     }
   };
 
-  
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    localStorage.removeItem('token');
-    setToken(null);
-  };
-
   const refreshAll = async () => {
     const freshCourses = await fetchCourses();
     let currentId = activeCourseId;
@@ -395,29 +321,6 @@ function App() {
       await fetchData(currentId);
     } else {
       setLoading(false);
-    }
-  };
-
-  const triggerDatabaseSync = async () => {
-    setSyncStatus('syncing');
-    try {
-      const res = await fetch(`${API_BASE}/sync`, {
-        method: 'POST'
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        setSyncStatus('success');
-        const nowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        setLastSyncTime(nowStr);
-        localStorage.setItem('lastSyncTime', nowStr);
-        await refreshAll();
-      } else {
-        setSyncStatus('error');
-        alert(`Sync failed: ${data.error || 'Unknown error'}`);
-      }
-    } catch (err: any) {
-      setSyncStatus('error');
-      alert(`Sync failed: ${err.message}`);
     }
   };
 
@@ -936,10 +839,8 @@ function App() {
   };
 
   useEffect(() => {
-    if (token) {
-      triggerDatabaseSync();
-    }
-  }, [token]);
+    refreshAll();
+  }, []);
 
   useEffect(() => {
     if (activeCourseId !== null) {
@@ -1283,34 +1184,7 @@ function App() {
             </div>
           </li>
           
-          <li style={{ marginTop: 'auto', borderTop: '1px solid rgba(255,255,255,0.15)', paddingTop: '16px', paddingLeft: '12px', paddingRight: '12px' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem' }}>
-                <span style={{ color: '#94a3b8' }}>☁️ Database Sync</span>
-                <span style={{ 
-                  fontSize: '0.7rem', 
-                  padding: '2px 6px', 
-                  borderRadius: '12px', 
-                  backgroundColor: syncStatus === 'syncing' ? '#eab308' : syncStatus === 'success' ? '#10b981' : syncStatus === 'error' ? '#ef4444' : '#64748b',
-                  color: '#fff',
-                  fontWeight: 600
-                }}>
-                  {syncStatus === 'syncing' ? 'Syncing' : syncStatus === 'success' ? 'Synced' : syncStatus === 'error' ? 'Error' : 'Offline'}
-                </span>
-              </div>
-              {lastSyncTime && (
-                <div style={{ fontSize: '0.68rem', color: '#64748b' }}>Last: {lastSyncTime}</div>
-              )}
-              <button 
-                className="btn btn-primary" 
-                onClick={triggerDatabaseSync} 
-                disabled={syncStatus === 'syncing'}
-                style={{ width: '100%', fontSize: '0.75rem', padding: '6px', minHeight: 'auto', backgroundColor: '#3b82f6', border: 'none', color: '#fff', borderRadius: '4px', cursor: 'pointer' }}
-              >
-                {syncStatus === 'syncing' ? 'Syncing...' : 'Sync Now'}
-              </button>
-            </div>
-          </li>
+          
         </ul>
       </aside>
 
@@ -1335,14 +1209,6 @@ function App() {
         {/* ── Row 2: Action Toolbar ── */}
         <div className="header-toolbar no-print">
           <button className="btn btn-secondary" onClick={refreshAll}>🔄 Refresh</button>
-          
-          <button 
-            className="btn btn-secondary"
-            onClick={handleLogout}
-            style={{ borderColor: '#ef4444', color: '#ef4444' }}
-          >
-            Logout
-          </button>
 <button
             className="btn btn-secondary"
             onClick={() => setTheme(prev => prev === 'dark' ? 'light' : 'dark')}

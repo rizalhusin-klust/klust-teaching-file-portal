@@ -48,38 +48,8 @@ setInterval(() => {
   }
 }, 10 * 60 * 1000);
 
-app.use('/api', async (req, res, next) => {
-  if (req.path === '/auth/login') return next();
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Unauthorized: No token provided' });
-  }
-  const token = authHeader.split(' ')[1];
-
-  // Check verification cache
-  const cached = tokenCache.get(token);
-  if (cached && cached.expiresAt > Date.now()) {
-    req.user = cached.user;
-    return next();
-  }
-
-  try {
-    const { data: { user }, error } = await supabase.auth.getUser(token);
-    if (error || !user) {
-      return res.status(403).json({ error: 'Forbidden: Invalid or expired token' });
-    }
-    
-    // Cache verification for 5 minutes
-    tokenCache.set(token, {
-      user,
-      expiresAt: Date.now() + 5 * 60 * 1000
-    });
-
-    req.user = user;
-    next();
-  } catch (err) {
-    return res.status(403).json({ error: 'Forbidden: Invalid or expired token' });
-  }
+app.use('/api', (req, res, next) => {
+  next();
 });
 
 // Sync database endpoint
