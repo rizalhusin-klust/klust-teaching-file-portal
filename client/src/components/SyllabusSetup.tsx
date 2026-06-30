@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import type { CloPloMapping, CourseInfo } from '../App';
+import PrintHeader from './PrintHeader';
 
 type SyllabusSetupProps = {
   cloPloMappings: CloPloMapping[];
@@ -9,9 +10,10 @@ type SyllabusSetupProps = {
   API_BASE: string;
   activeCourseId: number | null;
   courseInfo: CourseInfo | null;
+  hidePrintHeader?: boolean;
 };
 
-export default function SyllabusSetup({ cloPloMappings, clos: closProp, plos: plosProp, onRefresh, API_BASE, activeCourseId, courseInfo }: SyllabusSetupProps) {
+export default function SyllabusSetup({ cloPloMappings, clos: closProp, plos: plosProp, onRefresh, API_BASE, activeCourseId, courseInfo, hidePrintHeader = false }: SyllabusSetupProps) {
   const [localMappings, setLocalMappings] = useState<{ [key: string]: boolean }>({});
   const [localMethods, setLocalMethods] = useState<{ [key: string]: { tm: string; am: string } }>({});
   const [synopsisInput, setSynopsisInput] = useState('');
@@ -181,6 +183,9 @@ export default function SyllabusSetup({ cloPloMappings, clos: closProp, plos: pl
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      {!hidePrintHeader && (
+        <PrintHeader title="Course Syllabus Outline" courseInfo={courseInfo} />
+      )}
       
       {/* Course Synopsis Card */}
       <div className="view-card no-print">
@@ -216,9 +221,18 @@ export default function SyllabusSetup({ cloPloMappings, clos: closProp, plos: pl
         <h2>CLO to PLO Mapping Matrix (Item 8)</h2>
         <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '14px' }}>
           Tick the checkboxes to create links between Course Learning Outcomes (CLO) and Program Learning Outcomes (PLO).
+          The table prints as static indicators (●) based on what you have selected.
         </p>
 
-        <div className="table-container" style={{ overflowX: 'auto' }}>
+        {/* ── Print styles for this section ─────────────────────────── */}
+        <style dangerouslySetInnerHTML={{ __html: `
+          @media print {
+            .clo-plo-table .no-print { display: none !important; }
+            .clo-plo-table .only-print { display: inline !important; }
+          }
+        ` }} />
+
+        <div className="table-container clo-plo-table" style={{ overflowX: 'auto' }}>
           <table className="data-table">
             <thead>
               <tr>
@@ -261,39 +275,62 @@ export default function SyllabusSetup({ cloPloMappings, clos: closProp, plos: pl
                       const isMapped = localMappings[`${cloNo}_${ploNo}`] || false;
                       return (
                         <td key={ploNo} style={{ textAlign: 'center', padding: '8px 4px' }}>
+                          {/* Interactive checkbox — screen only */}
                           <input
+                            className="no-print"
                             type="checkbox"
                             checked={isMapped}
                             onChange={e => handleCheckboxChange(cloNo, ploNo, e.target.checked)}
                             style={{ width: '16px', height: '16px', cursor: 'pointer' }}
                           />
+                          {/* Static indicator — print only */}
+                          <span
+                            className="only-print"
+                            style={{
+                              display: 'none',
+                              fontSize: '1.2rem',
+                              fontWeight: 'bold',
+                              color: isMapped ? '#1e293b' : '#ccc',
+                            }}
+                          >
+                            {isMapped ? '●' : '○'}
+                          </span>
                         </td>
                       );
                     })}
-                    {/* Method dropdowns */}
-                    <td>
+                    {/* Teaching method — dropdown on screen, static text in print */}
+                    <td style={{ fontSize: '0.85rem' }}>
                       <select
+                        className="no-print"
                         value={methods.tm}
                         onChange={e => handleMethodChange(cloNo, 'tm', e.target.value)}
-                        style={{ background: 'var(--bg-input)', border: '1px solid var(--border-color)', borderRadius: '4px', color: 'var(--text-active)', fontSize: '0.8rem', padding: '4px' }}
+                        style={{ background: 'var(--bg-input)', border: '1px solid var(--border-color)', borderRadius: '4px', color: 'var(--text-active)', fontSize: '0.8rem', padding: '4px', width: '100%' }}
                       >
                         <option value="">Select Method</option>
                         <option value="Hands on / Labs">Hands on / Labs</option>
                         <option value="Lecture">Lecture</option>
                         <option value="Tutorial">Tutorial</option>
                       </select>
+                      <span className="only-print" style={{ display: 'none' }}>
+                        {methods.tm || '—'}
+                      </span>
                     </td>
-                    <td>
+                     <td style={{ fontSize: '0.85rem' }}>
+                      {/* Assessment method — dropdown on screen, static text in print */}
                       <select
+                        className="no-print"
                         value={methods.am}
                         onChange={e => handleMethodChange(cloNo, 'am', e.target.value)}
-                        style={{ background: 'var(--bg-input)', border: '1px solid var(--border-color)', borderRadius: '4px', color: 'var(--text-active)', fontSize: '0.8rem', padding: '4px' }}
+                        style={{ background: 'var(--bg-input)', border: '1px solid var(--border-color)', borderRadius: '4px', color: 'var(--text-active)', fontSize: '0.8rem', padding: '4px', width: '100%' }}
                       >
                         <option value="">Select Assessment</option>
                         <option value="Tutorial/Assignment">Tutorial/Assignment</option>
                         <option value="Written Exam">Written Exam</option>
                         <option value="Project">Project</option>
                       </select>
+                      <span className="only-print" style={{ display: 'none' }}>
+                        {methods.am || '—'}
+                      </span>
                     </td>
                   </tr>
                 );

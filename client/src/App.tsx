@@ -1,5 +1,6 @@
 import JSZip from 'jszip';
 import { useState, useEffect, useRef } from 'react';
+import { supabase } from './supabaseClient';
 import Dashboard from './components/Dashboard';
 import Roster from './components/Roster';
 import MainTables from './components/MainTables';
@@ -87,7 +88,7 @@ export type MarkRecord = {
 export type AttendanceRecord = {
   student_matric_id: string;
   session_date: string;
-  status: 'Y' | 'N' | 'MC';
+  status: 'Y' | 'N' | 'MC' | 'LR' | '';
 };
 
 export type WeeklyReport = {
@@ -183,6 +184,73 @@ function App() {
     return localStorage.getItem('sidebarCollapsed') === 'true';
   });
 
+  const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'success' | 'error'>('idle');
+  const [lastSyncTime, setLastSyncTime] = useState<string | null>(localStorage.getItem('lastSyncTime'));
+
+  // Supabase Auth listener
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        setToken(session.access_token);
+        localStorage.setItem('token', session.access_token);
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        setToken(session.access_token);
+        localStorage.setItem('token', session.access_token);
+      } else {
+        setToken(null);
+        localStorage.removeItem('token');
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Global fetch wrapper to inject Supabase JWT
+  useEffect(() => {
+    const originalFetch = window.fetch;
+    window.fetch = async (input, init) => {
+      const token = localStorage.getItem('token');
+      const urlStr = typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
+      const isApiCall = urlStr.includes('/api/') || urlStr.includes(API_BASE);
+
+      if (token && isApiCall) {
+        init = init || {};
+        init.headers = init.headers || {};
+        if (init.headers instanceof Headers) {
+          init.headers.set('Authorization', `Bearer ${token}`);
+        } else if (Array.isArray(init.headers)) {
+          init.headers.push(['Authorization', `Bearer ${token}`]);
+        } else {
+          // @ts-ignore
+          init.headers['Authorization'] = `Bearer ${token}`;
+        }
+      }
+      
+      const response = await originalFetch(input, init);
+
+      // If token is invalid or expired, force logout
+      if (isApiCall && (response.status === 401 || response.status === 403)) {
+        console.warn('Authentication token expired or invalid, logging out.');
+        localStorage.removeItem('token');
+        setToken(null);
+        // Return dummy empty response to prevent JSON parsing crashes
+        return new Response(JSON.stringify([]), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+
+      return response;
+    };
+    return () => {
+      window.fetch = originalFetch;
+    };
+  }, [API_BASE]);
+
   useEffect(() => {
     if (theme === 'light') {
       document.body.classList.add('light-theme');
@@ -196,15 +264,55 @@ function App() {
     localStorage.setItem('sidebarCollapsed', String(sidebarCollapsed));
   }, [sidebarCollapsed]);
 
+  useEffect(() => {
+    const originalPrint = window.print;
+    window.print = function () {
+      const year = courseInfo?.semester?.match(/\b\d{4}(?:\/\d{4})?\b/)?.[0] || new Date().getFullYear().toString();
+      const sem = courseInfo?.semester || '';
+      const programCode = students.find((s) => s.programme)?.programme || 'FBE301';
+      const code = courseInfo?.course_code || '';
+      const name = courseInfo?.course_name || '';
+      const lecturerName = courseInfo?.lecturer || '';
+
+      const suggestedTitle = [year, sem, programCode, code, name, lecturerName]
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .join(' ')
+        .replace(/[\\/:*?"<>|]/g, '')
+        .replace(/\s+/g, ' ');
+
+      const originalTitle = document.title;
+      if (suggestedTitle) {
+        document.title = suggestedTitle;
+      }
+
+      originalPrint.apply(this, arguments as any);
+
+      const restoreTitle = () => {
+        document.title = originalTitle;
+        window.removeEventListener('afterprint', restoreTitle);
+      };
+      window.addEventListener('afterprint', restoreTitle);
+      setTimeout(restoreTitle, 2000);
+    };
+
+    return () => {
+      window.print = originalPrint;
+    };
+  }, [courseInfo, students]);
+
   const fetchCourses = async () => {
     try {
       const res = await fetch(`${API_BASE}/courses`);
       const data = await res.json();
-      setCourses(data);
-      if (data.length > 0 && activeCourseId === null) {
-        setActiveCourseId(data[0].id);
+      if (Array.isArray(data)) {
+        setCourses(data);
+        if (data.length > 0 && activeCourseId === null) {
+          setActiveCourseId(data[0].id);
+        }
+        return data;
       }
-      return data;
+      return [];
     } catch (err) {
       console.error('Error fetching courses list:', err);
       return [];
@@ -246,21 +354,22 @@ function App() {
       const cls = await closRes.json();
       const pls = await plosRes.json();
       const thrs = await thresholdsRes.json();
+      const planned = await plannedRes.json();
 
-      setCourseInfo(info);
-      setStudents(stu);
-      setAssessments(ass);
-      setOptionalGroups(opt);
-      setMarks(mrks);
-      setAttendance(att);
-      setReports(rep);
-      setCloPloMappings(maps);
-      setGradesData(grds);
-      setObeMetrics(obe);
-      setClos(cls);
-      setPlos(pls);
-      setGradeThresholds(thrs);
-      setPlannedAssessments(await plannedRes.json());
+      setCourseInfo(info && !info.error ? info : null);
+      setStudents(Array.isArray(stu) ? stu : []);
+      setAssessments(Array.isArray(ass) ? ass : []);
+      setOptionalGroups(Array.isArray(opt) ? opt : []);
+      setMarks(Array.isArray(mrks) ? mrks : []);
+      setAttendance(Array.isArray(att) ? att : []);
+      setReports(Array.isArray(rep) ? rep : []);
+      setCloPloMappings(Array.isArray(maps) ? maps : []);
+      setGradesData(Array.isArray(grds) ? grds : []);
+      setObeMetrics(obe && !obe.error ? obe : null);
+      setClos(Array.isArray(cls) ? cls : []);
+      setPlos(Array.isArray(pls) ? pls : []);
+      setGradeThresholds(Array.isArray(thrs) ? thrs : []);
+      setPlannedAssessments(Array.isArray(planned) ? planned : []);
     } catch (err) {
       console.error('Error fetching data from API:', err);
     } finally {
@@ -269,7 +378,8 @@ function App() {
   };
 
   
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     localStorage.removeItem('token');
     setToken(null);
   };
@@ -283,6 +393,31 @@ function App() {
     }
     if (currentId !== null) {
       await fetchData(currentId);
+    } else {
+      setLoading(false);
+    }
+  };
+
+  const triggerDatabaseSync = async () => {
+    setSyncStatus('syncing');
+    try {
+      const res = await fetch(`${API_BASE}/sync`, {
+        method: 'POST'
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setSyncStatus('success');
+        const nowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        setLastSyncTime(nowStr);
+        localStorage.setItem('lastSyncTime', nowStr);
+        await refreshAll();
+      } else {
+        setSyncStatus('error');
+        alert(`Sync failed: ${data.error || 'Unknown error'}`);
+      }
+    } catch (err: any) {
+      setSyncStatus('error');
+      alert(`Sync failed: ${err.message}`);
     }
   };
 
@@ -294,10 +429,29 @@ function App() {
       document.body.classList.remove('print-all-mode');
       window.removeEventListener('afterprint', cleanup);
     };
-    window.addEventListener('afterprint', cleanup);
-    setTimeout(() => {
-      window.print();
-      setTimeout(cleanup, 10000);
+    
+    setTimeout(async () => {
+      // @ts-ignore
+      if (window.electronAPI && window.electronAPI.exportToPdf) {
+        const year = courseInfo?.semester?.match(/[0-9]{4}/)?.[0] || new Date().getFullYear().toString();
+        const sem = courseInfo?.semester || '';
+        const program = programName?.split(' ')?.[0] || '';
+        const courseCode = courseInfo?.course_code || 'COURSE';
+        const cName = courseInfo?.course_name || '';
+        const lect = courseInfo?.lecturer || '';
+        const defaultFilename = `${year} ${sem} ${program} ${courseCode} ${cName} ${lect} All.pdf`.trim();
+        
+        // @ts-ignore
+        const res = await window.electronAPI.exportToPdf(defaultFilename);
+        if (!res.success && res.reason !== 'canceled') {
+          alert('Failed to export PDF: ' + res.reason);
+        }
+        cleanup();
+      } else {
+        window.addEventListener('afterprint', cleanup);
+        window.print();
+        setTimeout(cleanup, 10000);
+      }
     }, 400);
   };
 
@@ -344,6 +498,15 @@ function App() {
     const semester   = courseInfo?.semester || '';
     const lecturer   = courseInfo?.lecturer || '';
 
+    const year = courseInfo?.semester?.match(/\b\d{4}(?:\/\d{4})?\b/)?.[0] || new Date().getFullYear().toString();
+    const programCode = students.find(s => s.programme)?.programme || 'FBE301';
+    const suggestedTitle = [year, semester, programCode, courseCode, courseName, lecturer]
+      .map(s => s.trim())
+      .filter(Boolean)
+      .join(' ')
+      .replace(/[\\/:*?"<>|]/g, '')
+      .replace(/\s+/g, ' ');
+
     // Build tab nav HTML
     const tabNavHtml = tabDefs.map((t, i) =>
       `<button class="tab-btn${i === 0 ? ' active' : ''}" onclick="showTab(${i})" title="${t.label}">
@@ -375,7 +538,7 @@ function App() {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${courseCode} ${courseName} — Course Portfolio</title>
+  <title>${suggestedTitle || `${courseCode} ${courseName} — Course Portfolio`}</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -592,6 +755,35 @@ function App() {
     .panel-inner .attendance-cell.Y { background: #10b981 !important; color: white !important; }
     .panel-inner .attendance-cell.N { background: #ef4444 !important; color: white !important; }
     .panel-inner .attendance-cell.MC { background: #f59e0b !important; color: white !important; }
+    .panel-inner .attendance-cell.LR { background: #8b5cf6 !important; color: white !important; }
+
+    /* Chart overrides in exported HTML */
+    .panel-inner .chart-track {
+      background: #f1f5f9 !important;
+      border: 1px solid #cbd5e1 !important;
+    }
+    .panel-inner .chart-bar-fill.success {
+      background-color: #10b981 !important;
+      background: #10b981 !important;
+    }
+    .panel-inner .chart-bar-fill.danger {
+      background-color: #ef4444 !important;
+      background: #ef4444 !important;
+    }
+    .panel-inner .chart-bar-text {
+      color: #1e293b !important;
+    }
+    .panel-inner .attainment-bar-prev,
+    .panel-inner .attainment-legend-prev {
+      background-color: #94a3b8 !important;
+      background: #94a3b8 !important;
+    }
+    .panel-inner .attainment-bar-curr,
+    .panel-inner .attainment-legend-curr {
+      background-color: #3b82f6 !important;
+      background: #3b82f6 !important;
+    }
+
     /* Spreadsheet / overflow tables */
     .panel-inner .spreadsheet-grid,
     .panel-inner .table-container {
@@ -676,7 +868,10 @@ function App() {
     try {
       const zip = new JSZip();
       let modifiedHtml = html;
-      const uploadsFolder = zip.folder("uploads");
+      
+      const rootFolderName = suggestedTitle ? suggestedTitle : `${courseCode}_portfolio`;
+      const rootFolder = zip.folder(rootFolderName);
+      const uploadsFolder = rootFolder?.folder("uploads");
 
       // Find all /uploads/ URLs in the HTML string
       const urlRegex = /(?:src|href)="([^"]*\/uploads\/[^"]+)"/g;
@@ -712,15 +907,19 @@ function App() {
         }
       }
 
-      // Add the modified HTML to the zip
-      zip.file("index.html", modifiedHtml);
+      // Add the modified HTML to the root folder in the zip
+      if (rootFolder) {
+        rootFolder.file("index.html", modifiedHtml);
+      } else {
+        zip.file("index.html", modifiedHtml);
+      }
 
       // Generate the ZIP file and trigger download
       const zipBlob = await zip.generateAsync({ type: "blob" });
       const url = URL.createObjectURL(zipBlob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${courseCode}_portfolio.zip`;
+      a.download = suggestedTitle ? `${suggestedTitle}.zip` : `${courseCode}_portfolio.zip`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -737,8 +936,10 @@ function App() {
   };
 
   useEffect(() => {
-    refreshAll();
-  }, []);
+    if (token) {
+      triggerDatabaseSync();
+    }
+  }, [token]);
 
   useEffect(() => {
     if (activeCourseId !== null) {
@@ -769,7 +970,7 @@ function App() {
     }
   };
 
-  const handleUpdateAttendance = async (studentMatricId: string, date: string, status: 'Y' | 'N' | 'MC') => {
+  const handleUpdateAttendance = async (studentMatricId: string, date: string, status: 'Y' | 'N' | 'MC' | 'LR' | '') => {
     if (activeCourseId === null) return;
     try {
       await fetch(`${API_BASE}/attendance`, {
@@ -783,6 +984,28 @@ function App() {
       console.error('Error saving attendance:', err);
     }
   };
+
+  const handleUpdateAttendanceBulk = async (updates: { student_matric_id: string; session_date: string; status: 'Y' | 'N' | 'MC' | 'LR' | '' }[]) => {
+    if (activeCourseId === null) return;
+    try {
+      await fetch(`${API_BASE}/attendance`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates.map(u => ({ ...u, course_id: activeCourseId })))
+      });
+      const attRes = await fetch(`${API_BASE}/attendance?course_id=${activeCourseId}`);
+      setAttendance(await attRes.json());
+    } catch (err) {
+      console.error('Error saving bulk attendance:', err);
+    }
+  };
+
+  if (!token) {
+    return <Login onLogin={(t) => {
+      localStorage.setItem('token', t);
+      setToken(t);
+    }} API_BASE={API_BASE} />;
+  }
 
   if (loading && !courseInfo) {
     return (
@@ -883,7 +1106,7 @@ function App() {
       case 'obe':
         return <ObeDashboard assessments={assessments} optionalGroups={optionalGroups} obeMetrics={obeMetrics} gradesData={gradesData} courseInfo={courseInfo} API_BASE={API_BASE} activeCourseId={activeCourseId} onRefresh={refreshAll} />;
       case 'attendance':
-        return <AttendanceRegistry students={students} attendance={attendance} onUpdateAttendance={handleUpdateAttendance} courseInfo={courseInfo} API_BASE={API_BASE} activeCourseId={activeCourseId} />;
+        return <AttendanceRegistry students={students} attendance={attendance} onUpdateAttendance={handleUpdateAttendance} onUpdateAttendanceBulk={handleUpdateAttendanceBulk} courseInfo={courseInfo} API_BASE={API_BASE} activeCourseId={activeCourseId} />;
       case 'reports':
         return <LecturerReport courseInfo={courseInfo} reports={reports} onRefresh={refreshAll} API_BASE={API_BASE} activeCourseId={activeCourseId} />;
       case 'coursework_docs':
@@ -905,13 +1128,7 @@ function App() {
     }
   };
 
-  
-  if (!token) {
-    return <Login onLogin={(t) => {
-      localStorage.setItem('token', t);
-      setToken(t);
-    }} API_BASE={API_BASE} />;
-  }
+
 
   const programCode = students.find(s => s.programme)?.programme || 'FBE301';
   const programName = programCode.toUpperCase() === 'FBE301' ? 'Bachelor of Science (Architectural Studies)' : programCode;
@@ -1066,6 +1283,34 @@ function App() {
             </div>
           </li>
           
+          <li style={{ marginTop: 'auto', borderTop: '1px solid rgba(255,255,255,0.15)', paddingTop: '16px', paddingLeft: '12px', paddingRight: '12px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem' }}>
+                <span style={{ color: '#94a3b8' }}>☁️ Database Sync</span>
+                <span style={{ 
+                  fontSize: '0.7rem', 
+                  padding: '2px 6px', 
+                  borderRadius: '12px', 
+                  backgroundColor: syncStatus === 'syncing' ? '#eab308' : syncStatus === 'success' ? '#10b981' : syncStatus === 'error' ? '#ef4444' : '#64748b',
+                  color: '#fff',
+                  fontWeight: 600
+                }}>
+                  {syncStatus === 'syncing' ? 'Syncing' : syncStatus === 'success' ? 'Synced' : syncStatus === 'error' ? 'Error' : 'Offline'}
+                </span>
+              </div>
+              {lastSyncTime && (
+                <div style={{ fontSize: '0.68rem', color: '#64748b' }}>Last: {lastSyncTime}</div>
+              )}
+              <button 
+                className="btn btn-primary" 
+                onClick={triggerDatabaseSync} 
+                disabled={syncStatus === 'syncing'}
+                style={{ width: '100%', fontSize: '0.75rem', padding: '6px', minHeight: 'auto', backgroundColor: '#3b82f6', border: 'none', color: '#fff', borderRadius: '4px', cursor: 'pointer' }}
+              >
+                {syncStatus === 'syncing' ? 'Syncing...' : 'Sync Now'}
+              </button>
+            </div>
+          </li>
         </ul>
       </aside>
 
@@ -1084,20 +1329,7 @@ function App() {
             <h1>{courseInfo?.course_code || 'ARCH 2240'} – {courseInfo?.course_name || 'COMPUTER ANIMATION'}</h1>
             <p>Lecturer: {courseInfo?.lecturer || 'RIZAL HUSIN'}  ·  Semester: {courseInfo?.semester || 'JUNE 2024'}</p>
           </div>
-          <div className="header-banner-select">
-            <label htmlFor="course-select">Active Course:</label>
-            <select
-              id="course-select"
-              value={activeCourseId || ''}
-              onChange={(e) => setActiveCourseId(Number(e.target.value))}
-            >
-              {courses.map(c => (
-                <option key={c.id} value={c.id}>
-                  {c.course_code} - {c.course_name}
-                </option>
-              ))}
-            </select>
-          </div>
+          
         </div>
 
         {/* ── Row 2: Action Toolbar ── */}
@@ -1118,8 +1350,19 @@ function App() {
           >
             {theme === 'dark' ? '☀️ Light' : '🌙 Dark'}
           </button>
-          <button className="btn btn-secondary" onClick={() => window.print()} title="Print current tab view">
-            {activeTab === 'dashboard' ? '🖨️ Print Cover' : '🖨️ Print'}
+          <button className="btn btn-secondary" onClick={async () => {
+            // @ts-ignore
+            if (window.electronAPI && window.electronAPI.exportToPdf) {
+              const year = courseInfo?.semester?.match(/[0-9]{4}/)?.[0] || new Date().getFullYear().toString();
+              const defaultFilename = `${year} ${courseInfo?.course_code || 'COURSE'} ${activeTab}.pdf`;
+              // @ts-ignore
+              const res = await window.electronAPI.exportToPdf(defaultFilename);
+              if (!res.success && res.reason !== 'canceled') alert('Failed to export PDF: ' + res.reason);
+            } else {
+              window.print();
+            }
+          }} title="Export current tab view as PDF">
+            {activeTab === 'dashboard' ? '📄 Export Cover' : '📄 Export PDF'}
           </button>
           {activeTab === 'setup' && (
             <>
@@ -1127,7 +1370,7 @@ function App() {
                 className="btn btn-primary"
                 onClick={handlePrintAll}
                 disabled={isPrintingAll || isExportingHtml}
-                title="Print all documents in sequence"
+                title="Export all documents as PDF"
                 style={{
                   background: isPrintingAll
                     ? 'linear-gradient(135deg, #4b4b8a, #6b4ba6)'
@@ -1137,10 +1380,10 @@ function App() {
                   letterSpacing: '0.03em',
                   opacity: (isPrintingAll || isExportingHtml) ? 0.75 : 1,
                   cursor: (isPrintingAll || isExportingHtml) ? 'not-allowed' : 'pointer',
-                  transition: 'all 0.2s'
+                  color: '#fff'
                 }}
               >
-                {isPrintingAll ? '⏳ Preparing...' : '🖨️ Print All'}
+                {isPrintingAll ? '⏳ Exporting...' : '📄 Export All to PDF'}
               </button>
               <button
                 className="btn btn-primary"
@@ -1246,6 +1489,49 @@ function App() {
               color: black !important;
               background: white !important;
             }
+
+            /* Preserve attendance cell backgrounds in print all */
+            .print-all-section td.attendance-cell.Y { background-color: #10b981 !important; background: #10b981 !important; color: white !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .print-all-section td.attendance-cell.N { background-color: #ef4444 !important; background: #ef4444 !important; color: white !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .print-all-section td.attendance-cell.MC { background-color: #f59e0b !important; background: #f59e0b !important; color: white !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .print-all-section td.attendance-cell.LR { background-color: #8b5cf6 !important; background: #8b5cf6 !important; color: white !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+            /* Preserve chart colors in print all */
+            .print-all-section .chart-track {
+              background: #f1f5f9 !important;
+              border: 1px solid #cbd5e1 !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            .print-all-section .chart-bar-fill.success {
+              background-color: #10b981 !important;
+              background: #10b981 !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            .print-all-section .chart-bar-fill.danger {
+              background-color: #ef4444 !important;
+              background: #ef4444 !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            .print-all-section .chart-bar-text {
+              color: #1e293b !important;
+            }
+            .print-all-section .attainment-bar-prev,
+            .print-all-section .attainment-legend-prev {
+              background-color: #94a3b8 !important;
+              background: #94a3b8 !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            .print-all-section .attainment-bar-curr,
+            .print-all-section .attainment-legend-curr {
+              background-color: #3b82f6 !important;
+              background: #3b82f6 !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
           }
         `}</style>
 
@@ -1284,6 +1570,7 @@ function App() {
             activeCourseId={activeCourseId}
             plannedAssessments={plannedAssessments}
             courseInfo={courseInfo}
+            hidePrintHeader={true}
           />
         </div>
 
@@ -1383,6 +1670,7 @@ function App() {
             API_BASE={API_BASE}
             activeCourseId={activeCourseId}
             courseInfo={courseInfo}
+            hidePrintHeader={true}
           />
         </div>
 
@@ -1422,13 +1710,13 @@ function App() {
             courseInfo={courseInfo}
             API_BASE={API_BASE}
             activeCourseId={activeCourseId}
+            hidePrintHeader={true}
           />
         </div>
 
         {/* 7. Report by Lecturer */}
         <PrintSeparator number={7} title={"Report by Lecturer"} />
         <div className="print-all-section">
-          <PrintHeader title="Weekly Reports (KLUST F28)" courseInfo={courseInfo} programName={programName} />
           <LecturerReport
             courseInfo={courseInfo}
             reports={reports}
@@ -1447,6 +1735,7 @@ function App() {
             onRefresh={() => {}}
             API_BASE={API_BASE}
             activeCourseId={activeCourseId}
+            hidePrintHeader={true}
           />
         </div>
 

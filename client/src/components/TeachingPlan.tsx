@@ -89,6 +89,96 @@ export default function TeachingPlan({
     }
   };
 
+  const handleGeneralPaste = (
+    startRowIdx: number,
+    startColField: 'date_label' | 'syllabus_topic' | 'f2f_hours' | 'nf2f_hours',
+    e: React.ClipboardEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const text = e.clipboardData.getData('text/plain');
+    if (!text) return;
+
+    if (!text.includes('\t') && !text.includes('\n')) {
+      return;
+    }
+
+    e.preventDefault();
+
+    const fields: ('date_label' | 'syllabus_topic' | 'f2f_hours' | 'nf2f_hours')[] = [
+      'date_label',
+      'syllabus_topic',
+      'f2f_hours',
+      'nf2f_hours'
+    ];
+    const startColIdx = fields.indexOf(startColField);
+
+    const lines = text.split(/\r?\n/);
+    
+    let nextReportsState: WeeklyReport[] = [];
+    setLocalReports(prev => {
+      const next = [...prev];
+      lines.forEach((line, rOffset) => {
+        if (rOffset === lines.length - 1 && line.trim() === '') return;
+        const rowIdx = startRowIdx + rOffset;
+        if (rowIdx >= next.length) return;
+
+        const cols = line.split('\t');
+        cols.forEach((val, cOffset) => {
+          const colIdx = startColIdx + cOffset;
+          if (colIdx >= fields.length) return;
+
+          const field = fields[colIdx];
+          let parsedVal: any = val;
+          if (field === 'f2f_hours' || field === 'nf2f_hours') {
+            parsedVal = parseFloat(val) || 0;
+          }
+          next[rowIdx] = {
+            ...next[rowIdx],
+            [field]: parsedVal
+          };
+        });
+      });
+      nextReportsState = next;
+      return next;
+    });
+
+    setTimeout(async () => {
+      const savePromises = [];
+      for (let rOffset = 0; rOffset < lines.length; rOffset++) {
+        const line = lines[rOffset];
+        if (rOffset === lines.length - 1 && line.trim() === '') continue;
+
+        const rowIdx = startRowIdx + rOffset;
+        if (rowIdx >= nextReportsState.length) continue;
+
+        const row = nextReportsState[rowIdx];
+        if (row && activeCourseId) {
+          savePromises.push(
+            fetch(`${API_BASE}/reports`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                week_no: row.week_no,
+                date_label: row.date_label || '',
+                topics: row.topics || '',
+                syllabus_topic: row.syllabus_topic || '',
+                f2f_hours: row.f2f_hours || 0,
+                nf2f_hours: row.nf2f_hours || 0,
+                remarks: row.remarks || 'as planned',
+                course_id: activeCourseId,
+                original_week_no: row.week_no
+              })
+            }).catch(err => console.error("Error saving report row:", err))
+          );
+        }
+      }
+
+      if (savePromises.length > 0) {
+        await Promise.all(savePromises);
+        onRefresh();
+      }
+    }, 100);
+  };
+
   const getProgramName = () => {
     const code = students.find(s => s.programme)?.programme || 'FBE301';
     if (code.toUpperCase() === 'FBE301') {
@@ -121,13 +211,21 @@ export default function TeachingPlan({
       
       {/* Print-Only Header & Metadata for Teaching Plan */}
       <div className="only-print teaching-file-cover-container" style={{ maxWidth: '100%', margin: '0', padding: '0 0 1rem 0', borderBottom: '2px solid #1e3a8a', marginBottom: '0.25rem', background: '#ffffff', color: '#000000' }}>
-        <div style={{ textAlign: 'left', marginBottom: '1.25rem' }}>
-          <h1 className="cover-title" style={{ textAlign: 'left', fontSize: '1.4rem', color: '#1e3a8a', fontWeight: '700', margin: '0 0 0.25rem 0' }}>
-            KUALA LUMPUR UNIVERSITY OF<br />SCIENCE AND TECHNOLOGY
-          </h1>
-          <div className="cover-subtitle" style={{ textAlign: 'left', fontSize: '1.3rem', fontWeight: '300', color: '#1e3a8a', margin: '0.4rem 0 0.4rem 0', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            Teaching Plan
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '20px', marginBottom: '1.25rem' }}>
+          <div style={{ textAlign: 'left' }}>
+            <h1 className="cover-title" style={{ textAlign: 'left', fontSize: '1.4rem', color: '#1e3a8a', fontWeight: '700', margin: '0 0 0.25rem 0', lineHeight: '1.2' }}>
+              <span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>KUALA LUMPUR UNIVERSITY</span>{' '}
+              <span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>OF SCIENCE AND TECHNOLOGY</span>
+            </h1>
+            <div className="cover-subtitle" style={{ textAlign: 'left', fontSize: '1.3rem', fontWeight: '300', color: '#1e3a8a', margin: '0.4rem 0 0 0', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Teaching Plan
+            </div>
           </div>
+          <img
+            src="https://raw.githubusercontent.com/rizalhusin-klust/klust-images/main/KLUST%20%20logo%20only.png"
+            alt="KLUST Logo"
+            style={{ width: '95px', height: 'auto', display: 'block', flexShrink: 0 }}
+          />
         </div>
 
         {/* Metadata Table */}
@@ -279,6 +377,7 @@ export default function TeachingPlan({
                         value={w.date_label || ''}
                         onChange={e => handleInlineChange(idx, 'date_label', e.target.value)}
                         onBlur={() => handleInlineBlur(idx)}
+                        onPaste={e => handleGeneralPaste(idx, 'date_label', e)}
                         className="inline-input"
                       />
                     </td>
@@ -287,8 +386,9 @@ export default function TeachingPlan({
                         value={w.syllabus_topic || ''}
                         onChange={e => handleInlineChange(idx, 'syllabus_topic', e.target.value)}
                         onBlur={() => handleInlineBlur(idx)}
+                        onPaste={e => handleGeneralPaste(idx, 'syllabus_topic', e)}
                         className="inline-textarea"
-                        placeholder="Planned syllabus topic details..."
+                        placeholder="Planned syllabus topic details... (You can paste multiple rows here)"
                       />
                     </td>
                     <td style={{ textAlign: 'center' }}>
@@ -298,6 +398,7 @@ export default function TeachingPlan({
                         value={w.f2f_hours || 0}
                         onChange={e => handleInlineChange(idx, 'f2f_hours', parseFloat(e.target.value) || 0)}
                         onBlur={() => handleInlineBlur(idx)}
+                        onPaste={e => handleGeneralPaste(idx, 'f2f_hours', e)}
                         className="inline-input"
                         style={{ textAlign: 'center' }}
                       />
@@ -309,6 +410,7 @@ export default function TeachingPlan({
                         value={w.nf2f_hours || 0}
                         onChange={e => handleInlineChange(idx, 'nf2f_hours', parseFloat(e.target.value) || 0)}
                         onBlur={() => handleInlineBlur(idx)}
+                        onPaste={e => handleGeneralPaste(idx, 'nf2f_hours', e)}
                         className="inline-input"
                         style={{ textAlign: 'center' }}
                       />

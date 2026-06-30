@@ -304,12 +304,12 @@ export default function FinalResultDocs({ courseInfo, onRefresh, API_BASE, activ
 
   const getSummaryData = () => {
     const summary = [];
-    const timetableKey = 'lecturer_timetable';
-    const timetableItem = portfolio[timetableKey];
+    const resultKey = 'final_result_lms';
+    const resultItem = portfolio[resultKey];
 
     summary.push({
-      label: 'Lecturer Timetable Schedule',
-      item: timetableItem
+      label: 'Detail of Result (LMS)',
+      item: resultItem
     });
     return summary;
   };
@@ -374,7 +374,7 @@ export default function FinalResultDocs({ courseInfo, onRefresh, API_BASE, activ
         </p>
 
         <div className="no-print" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
-          {renderSlotCard('lecturer_timetable', 'Lecturer Timetable Schedule')}
+          {renderSlotCard('final_result_lms', 'Detail of Result (LMS)')}
         </div>
       </div>
     );

@@ -1,0 +1,2 @@
+(node:19604) [DEP0180] DeprecationWarning: fs.Stats constructor is deprecated.
+(Use `Course Manager --trace-deprecation ...` to show where the warning was created)

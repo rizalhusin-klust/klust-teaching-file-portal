@@ -111,7 +111,7 @@ export default function MarksGrid({ students, assessments, marks, gradesData, on
 
     const rows = pasteData.split(/\r?\n/);
     rows.forEach((row, rOffset) => {
-      if (!row.trim()) return;
+      if (rOffset === rows.length - 1 && row === '') return;
       const cols = row.split(/\t/);
       cols.forEach((val, cOffset) => {
         const targetRow = startRowIndex + rOffset;
@@ -122,17 +122,23 @@ export default function MarksGrid({ students, assessments, marks, gradesData, on
           const assessmentId = flatAssessments[targetCol].id;
           const maxMark = flatAssessments[targetCol].max_mark;
           
-          let cleanedVal = val.trim();
-          if (cleanedVal === '') return;
-          
-          const numVal = parseFloat(cleanedVal);
-          if (!isNaN(numVal)) {
-            const cappedVal = numVal < 0 ? 0 : (numVal > maxMark ? maxMark : numVal);
+          const cleanedVal = val.trim();
+          if (cleanedVal === '') {
             setLocalMarks(prev => ({
               ...prev,
-              [`${studentId}_${assessmentId}`]: String(cappedVal)
+              [`${studentId}_${assessmentId}`]: ''
             }));
-            onUpdateMark(studentId, assessmentId, cappedVal);
+            onUpdateMark(studentId, assessmentId, null);
+          } else {
+            const numVal = parseFloat(cleanedVal);
+            if (!isNaN(numVal)) {
+              const cappedVal = numVal < 0 ? 0 : (numVal > maxMark ? maxMark : numVal);
+              setLocalMarks(prev => ({
+                ...prev,
+                [`${studentId}_${assessmentId}`]: String(cappedVal)
+              }));
+              onUpdateMark(studentId, assessmentId, cappedVal);
+            }
           }
         }
       });

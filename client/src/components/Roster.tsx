@@ -229,8 +229,7 @@ export default function Roster({ students, onRefresh, API_BASE, activeCourseId, 
                 <th style={{ width: '15%' }}>Matric ID</th>
                 <th style={{ width: '35%' }}>Name</th>
                 <th style={{ width: '12%' }}>Programme</th>
-                <th style={{ width: '18%' }}>Email</th>
-                <th className="no-print" style={{ width: '14%' }}>HP No</th>
+                
                 <th className="no-print" style={{ width: '0px', display: 'none' }}>Actions</th>
               </tr>
             </thead>
@@ -241,8 +240,7 @@ export default function Roster({ students, onRefresh, API_BASE, activeCourseId, 
                   <td style={{ fontWeight: 'bold' }}>{student.matric_id}</td>
                   <td>{student.name}</td>
                   <td><span style={{ padding: '2px 6px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', fontSize: '0.8rem' }}>{student.programme}</span></td>
-                  <td>{student.email || <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>no email</span>}</td>
-                  <td className="no-print">{student.hp_no || <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>no number</span>}</td>
+                  
                   <td className="no-print" style={{ display: 'flex', justifyContent: 'center' }}>
                     <button className="btn btn-danger" style={{ padding: '4px 8px', fontSize: '0.75rem' }} onClick={() => handleDelete(student.matric_id)}>
                       🗑️ Delete

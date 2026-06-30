@@ -27,6 +27,8 @@ export default function MainTables({
   const [activeSubTab, setActiveSubTab] = useState<'info' | 'clo' | 'plo' | 'grades'>('info');
   const [showRegisterForm, setShowRegisterForm] = useState(false);
   const [duplicateCourse, setDuplicateCourse] = useState<CourseInfo | null>(null);
+  const [filterSemester, setFilterSemester] = useState('');
+  const [filterSubject, setFilterSubject] = useState('');
 
   // Course info form state
   const [courseCode, setCourseCode] = useState('');
@@ -364,6 +366,15 @@ export default function MainTables({
     }
   };
 
+    const uniqueSemesters = Array.from(new Set(courses.map(c => c.semester).filter(Boolean)));
+  const filteredCourses = courses.filter(c => {
+    const matchesSemester = filterSemester ? (c.semester || '').toLowerCase() === filterSemester.toLowerCase() : true;
+    const matchesSubject = filterSubject ? (
+      (c.course_code || '').toLowerCase().includes(filterSubject.toLowerCase()) ||
+      (c.course_name || '').toLowerCase().includes(filterSubject.toLowerCase())
+    ) : true;
+    return matchesSemester && matchesSubject;
+  });
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       
@@ -391,6 +402,31 @@ export default function MainTables({
             <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '14px' }}>
               Select a course to view details or activate it as the main active course workspace.
             </p>
+            <div style={{ display: 'flex', gap: '10px', marginBottom: '14px', flexWrap: 'wrap' }}>
+              <div style={{ flex: 1, minWidth: '130px' }}>
+                <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Filter by Semester</label>
+                <select
+                  value={filterSemester}
+                  onChange={e => setFilterSemester(e.target.value)}
+                  style={{ width: '100%', padding: '6px', background: 'var(--bg-input)', border: '1px solid var(--border-color)', borderRadius: '4px', color: 'var(--text-active)', fontSize: '0.825rem' }}
+                >
+                  <option value="">All Semesters</option>
+                  {uniqueSemesters.map(sem => (
+                    <option key={sem} value={sem}>{sem}</option>
+                  ))}
+                </select>
+              </div>
+              <div style={{ flex: 2, minWidth: '180px' }}>
+                <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Filter by Subject (Code/Name)</label>
+                <input
+                  type="text"
+                  value={filterSubject}
+                  onChange={e => setFilterSubject(e.target.value)}
+                  placeholder="Search subject code or name..."
+                  style={{ width: '100%', padding: '6px', background: 'var(--bg-input)', border: '1px solid var(--border-color)', borderRadius: '4px', color: 'var(--text-active)', fontSize: '0.825rem', height: '32px' }}
+                />
+              </div>
+            </div>
             <div className="table-container">
               <table className="data-table">
                 <thead>
@@ -401,7 +437,7 @@ export default function MainTables({
                   </tr>
                 </thead>
                 <tbody>
-                  {courses.map(c => {
+                  {filteredCourses.map(c => {
                     const isActive = c.id === activeCourseId;
                     return (
                       <tr key={c.id} style={{ background: isActive ? 'rgba(99, 102, 241, 0.05)' : 'transparent' }}>

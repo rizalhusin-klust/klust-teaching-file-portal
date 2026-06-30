@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import type { Assessment, OptionalGroup, PlannedAssessment, CourseInfo } from '../App';
+import PrintHeader from './PrintHeader';
 
 type AssessmentSetupProps = {
   assessments: Assessment[];
@@ -11,7 +12,7 @@ type AssessmentSetupProps = {
   activeCourseId: number | null;
   plannedAssessments: PlannedAssessment[];
   courseInfo: CourseInfo | null;
-  
+  hidePrintHeader?: boolean;
 };
 
 export default function AssessmentSetup({
@@ -23,7 +24,8 @@ export default function AssessmentSetup({
   API_BASE,
   activeCourseId,
   plannedAssessments,
-  courseInfo
+  courseInfo,
+  hidePrintHeader = false
 }: AssessmentSetupProps) {
   // Add specification item states
   const [type, setType] = useState<'CW' | 'E'>('CW');
@@ -403,6 +405,9 @@ export default function AssessmentSetup({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      {!hidePrintHeader && (
+        <PrintHeader title="Table of Specification" courseInfo={courseInfo} />
+      )}
       {/* Inject Print Page orientation and size style dynamically */}
       <style dangerouslySetInnerHTML={{__html: `
         @media print {
@@ -794,10 +799,10 @@ export default function AssessmentSetup({
 
       {/* Roster list of Assessments */}
       <div className="view-card">
-        <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '12px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '12px' }}>
           <div>
-            <h2 className="no-print" style={{ marginBottom: '4px' }}>Table of Specification (TOS)</h2>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+            <h2 style={{ marginBottom: '4px' }}>Table of Specification (TOS)</h2>
+            <div className="no-print" style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <span>🖨️ Size:</span>
                 <select

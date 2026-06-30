@@ -1,0 +1,7 @@
+
+User Data Path: C:\Users\RIZAL HUSIN\AppData\Roaming\course-manager-monorepo
+◇ injected env (5) from dist\win-unpacked\resources\app.asar\server\.env // tip: ⌘ multiple files { path: ['.env.local', '.env'] }
+Server running at http://localhost:3001
+Express server started successfully on port 65319
+Connected to SQLite database at: C:\Users\RIZAL HUSIN\AppData\Roaming\course-manager-monorepo\database.sqlite
+Database already initialized.

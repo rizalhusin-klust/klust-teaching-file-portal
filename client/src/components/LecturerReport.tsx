@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { CourseInfo, WeeklyReport } from '../App';
+import PrintHeader from './PrintHeader';
 
 type LecturerReportProps = {
   courseInfo: CourseInfo | null;
@@ -145,25 +146,27 @@ export default function LecturerReport({ courseInfo, reports, onRefresh, API_BAS
             className="print-page"
             style={{
               background: 'white',
-              border: '1px solid #000',
+              border: 'none',
               padding: '30px',
               color: 'black',
               boxSizing: 'border-box'
             }}
           >
-            {/* Page Header (KLUST F28 Form Header) */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2px solid #000', paddingBottom: '12px', marginBottom: '20px' }}>
-               <div>
-                <h3 style={{ fontSize: '1.2rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.02em', color: '#000' }}>
-                  Kuala Lumpur University of Science & Technology (KLUST)
-                </h3>
-                <span style={{ fontSize: '0.85rem', color: '#555' }}>REPORT BY LECTURER</span>
-              </div>
-              <div style={{ textAlign: 'right', fontSize: '0.75rem', color: '#555', lineHeight: '1.4' }}>
-                <div>Form: KLUST F28</div>
-                <div>Issue No: 6</div>
-                <div>Revision No: 1</div>
-                <div>Page No: Page {pageIdx + 1} of {reportPages.length}</div>
+            {/* Page Header (Official PrintHeader with Centered Logo & Title) */}
+            <PrintHeader
+              title="Weekly Lecturer Reports (KLUST F28)"
+              courseInfo={courseInfo}
+              hideMetadata={true}
+              centerAlign={true}
+            />
+
+            {/* Form details inline metadata */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', fontSize: '0.75rem', color: '#555', marginTop: '-12px', marginBottom: '20px', borderBottom: '1px solid #cbd5e1', paddingBottom: '8px' }}>
+              <div style={{ display: 'flex', gap: '15px' }}>
+                <div><strong>Form:</strong> KLUST F28</div>
+                <div><strong>Issue No:</strong> 6</div>
+                <div><strong>Revision No:</strong> 1</div>
+                <div><strong>Page No:</strong> Page {pageIdx + 1} of {reportPages.length}</div>
               </div>
             </div>
 
@@ -188,6 +191,9 @@ export default function LecturerReport({ courseInfo, reports, onRefresh, API_BAS
             </div>
 
             {/* Topics Table */}
+            <h4 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '8px', color: '#000', textTransform: 'uppercase', borderBottom: '1px solid #000', paddingBottom: '4px' }}>
+              Lecturer Weekly Teaching Record
+            </h4>
             <div style={{ marginBottom: '24px', border: '1px solid #000' }}>
               <table style={{ borderCollapse: 'collapse', width: '100%' }}>
                 <thead>
@@ -285,7 +291,7 @@ export default function LecturerReport({ courseInfo, reports, onRefresh, API_BAS
           }
           .print-page {
             background-color: white !important;
-            border: 1px solid #000 !important;
+            border: none !important;
             color: black !important;
             box-shadow: none !important;
             margin-bottom: 0 !important;

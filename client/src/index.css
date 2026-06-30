@@ -704,6 +704,8 @@ body.light-theme .btn-secondary:hover {
 .attendance-cell.Y { background-color: var(--secondary); color: white; }
 .attendance-cell.N { background-color: var(--danger); color: white; }
 .attendance-cell.MC { background-color: var(--warning); color: white; }
+.attendance-cell.LR { background-color: #8b5cf6; color: white; }
+
 
 .no-print {
   /* helper to hide items in print */
@@ -873,14 +875,14 @@ body.export-html-mode .export-only {
   }
 
   .cover-subtitle {
-    font-size: 2.3rem !important;
+    font-size: 1.2rem !important;
     font-weight: 300 !important;
     color: #1e3a8a !important;
     text-transform: uppercase !important;
     letter-spacing: 0.08em !important;
     margin: 0.75rem 0 0.25rem 0 !important;
     line-height: 1.1 !important;
-    text-align: center;
+    white-space: nowrap !important;
   }
 
   .cover-meta {
@@ -992,4 +994,90 @@ body.export-html-mode .export-only {
   body.print-all-mode .print-all-overlay {
     display: block !important;
   }
+
+  /* Preserving bar charts background colors and text color during print */
+  .chart-track {
+    background: #f1f5f9 !important;
+    border: 1px solid #cbd5e1 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .chart-bar-fill.success {
+    background-color: #10b981 !important;
+    background: #10b981 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .chart-bar-fill.danger {
+    background-color: #ef4444 !important;
+    background: #ef4444 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .chart-bar-text {
+    color: #1e293b !important;
+  }
+  .attainment-bar-prev, .attainment-legend-prev {
+    background-color: #94a3b8 !important;
+    background: #94a3b8 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .attainment-bar-curr, .attainment-legend-curr {
+    background-color: #3b82f6 !important;
+    background: #3b82f6 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  td.attendance-cell.Y {
+    background-color: #10b981 !important;
+    background: #10b981 !important;
+    color: white !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  td.attendance-cell.N {
+    background-color: #ef4444 !important;
+    background: #ef4444 !important;
+    color: white !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  td.attendance-cell.MC {
+    background-color: #f59e0b !important;
+    background: #f59e0b !important;
+    color: white !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  td.attendance-cell.LR {
+    background-color: #8b5cf6 !important;
+    background: #8b5cf6 !important;
+    color: white !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
 }
+
+/* Default screen styles for bar chart components */
+.chart-track {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+}
+.chart-bar-fill.success {
+  background-color: #10b981;
+}
+.chart-bar-fill.danger {
+  background-color: #ef4444;
+}
+.chart-bar-text {
+  color: #fff;
+}
+.attainment-bar-prev, .attainment-legend-prev {
+  background-color: #94a3b8;
+}
+.attainment-bar-curr, .attainment-legend-curr {
+  background-color: #3b82f6;
+}
+

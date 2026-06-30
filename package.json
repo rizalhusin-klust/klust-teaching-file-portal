@@ -6,9 +6,39 @@
     "install:all": "npm install && npm install --prefix client && npm install --prefix server",
     "client": "npm run dev --prefix client",
     "server": "npm run start --prefix server",
-    "dev": "concurrently \"npm run server\" \"npm run client\""
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "start": "electron .",
+    "build:client": "cd client && npm run build",
+    "build": "npm run build:client && electron-builder"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "electron": "^42.4.1",
+    "electron-builder": "^26.15.3"
+  },
+  "main": "main.js",
+  "type": "module",
+  "build": {
+    "appId": "com.coursemanager.app",
+    "productName": "Course Manager",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "server/**/*",
+      "client/dist/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
   }
 }

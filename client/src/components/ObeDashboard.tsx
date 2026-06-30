@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { Assessment, OptionalGroup } from '../App';
 import PrintHeader from './PrintHeader';
 
@@ -23,6 +23,8 @@ export default function ObeDashboard({ assessments,  obeMetrics, gradesData, isP
   const [cqiActions, setCqiActions] = useState<Record<string, string>>({});
   const [prevCloScores, setPrevCloScores] = useState<Record<string, string>>({});
   const [prevPloScores, setPrevPloScores] = useState<Record<string, string>>({});
+  const [courseLeaderSig, setCourseLeaderSig] = useState<string>('');
+  const [programLeaderSig, setProgramLeaderSig] = useState<string>();
 
   useEffect(() => {
     if (courseInfo?.portfolio_data) {
@@ -32,6 +34,8 @@ export default function ObeDashboard({ assessments,  obeMetrics, gradesData, isP
           setPrevCloScores(pd.cqi.prevCloScores || {});
           setPrevPloScores(pd.cqi.prevPloScores || {});
           setCqiActions(pd.cqi.cqiActions || {});
+          setCourseLeaderSig(pd.cqi.signatures?.courseLeader || '');
+          setProgramLeaderSig(pd.cqi.signatures?.programLeader || '');
         }
       } catch (e) {
         console.error("Failed to parse portfolio data for CQI", e);
@@ -44,31 +48,72 @@ export default function ObeDashboard({ assessments,  obeMetrics, gradesData, isP
   const { cloMetrics = {}, ploMetrics = {} } = obeMetrics;
 
   const renderCloTable = () => {
+    const cloKeys = Object.keys(cloMetrics);
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
         <div className="view-card">
-          <h2>CLO Class Target Analysis</h2>
+          <h2 style={{ fontSize: '1.2rem', color: '#1e3a8a', fontWeight: '700', marginBottom: '12px', borderBottom: '1px solid #cbd5e1', paddingBottom: '4px', textTransform: 'uppercase' }}>CLO Class Target Analysis</h2>
           <div className="table-container">
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>CLO Code</th>
-                  <th>Allocated Weight (%)</th>
-                  <th>Class Average Score (%)</th>
-                  <th style={{ textAlign: 'center' }}>Target Avg (50%) Achieved?</th>
-                  <th>Density Rate (%)</th>
-                  <th style={{ textAlign: 'center' }}>Target Density (50%) Achieved?</th>
+                  <th>Metrics / CLO</th>
+                  {cloKeys.map(cloNo => (
+                    <th key={cloNo} style={{ textAlign: 'center' }}>{cloNo}</th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
-                {Object.keys(cloMetrics).map(cloNo => {
-                  const m = cloMetrics[cloNo];
-                  return (
-                    <tr key={cloNo}>
-                      <td style={{ fontWeight: 'bold' }}>{cloNo}</td>
-                      <td>{m.allocatedMax.toFixed(2)}%</td>
-                      <td>{m.percentageAverage.toFixed(2)}%</td>
-                      <td style={{ textAlign: 'center' }}>
+                <tr>
+                  <td style={{ fontWeight: 'bold' }}>Allocated Weight (%)</td>
+                  {cloKeys.map(cloNo => (
+                    <td key={cloNo} style={{ textAlign: 'center' }}>{cloMetrics[cloNo].allocatedMax.toFixed(2)}</td>
+                  ))}
+                </tr>
+                <tr>
+                  <td style={{ fontWeight: 'bold' }}>Middle Marks</td>
+                  {cloKeys.map(cloNo => (
+                    <td key={cloNo} style={{ textAlign: 'center' }}>{(cloMetrics[cloNo].allocatedMax / 2).toFixed(2)}</td>
+                  ))}
+                </tr>
+                <tr>
+                  <td style={{ fontWeight: 'bold' }}>Average Marks</td>
+                  {cloKeys.map(cloNo => (
+                    <td key={cloNo} style={{ textAlign: 'center' }}>
+                      {cloMetrics[cloNo].averageScore ? cloMetrics[cloNo].averageScore.toFixed(2) : '0.00'}
+                    </td>
+                  ))}
+                </tr>
+                <tr>
+                  <td style={{ fontWeight: 'bold' }}>Percentage Average Marks (%)</td>
+                  {cloKeys.map(cloNo => (
+                    <td key={cloNo} style={{ textAlign: 'center' }}>{cloMetrics[cloNo].percentageAverage.toFixed(2)}%</td>
+                  ))}
+                </tr>
+                <tr>
+                  <td style={{ fontWeight: 'bold' }}>Overall Average Score (%) for each CLO</td>
+                  {cloKeys.map(cloNo => (
+                    <td key={cloNo} style={{ textAlign: 'center' }}>{cloMetrics[cloNo].percentageAverage.toFixed(2)}%</td>
+                  ))}
+                </tr>
+                <tr>
+                  <td style={{ fontWeight: 'bold' }}>No of students scoring equal or more than 50% of the allocated marks</td>
+                  {cloKeys.map(cloNo => (
+                    <td key={cloNo} style={{ textAlign: 'center' }}>{cloMetrics[cloNo].passCount || 0}</td>
+                  ))}
+                </tr>
+                <tr>
+                  <td style={{ fontWeight: 'bold' }}>Density (%) [Percentage of students scoring equal or more than 50% of the allocated marks]</td>
+                  {cloKeys.map(cloNo => (
+                    <td key={cloNo} style={{ textAlign: 'center' }}>{cloMetrics[cloNo].density.toFixed(2)}%</td>
+                  ))}
+                </tr>
+                <tr>
+                  <td style={{ fontWeight: 'bold' }}>Is the targeted Average (&gt;=50%) achieved?</td>
+                  {cloKeys.map(cloNo => {
+                    const m = cloMetrics[cloNo];
+                    return (
+                      <td key={cloNo} style={{ textAlign: 'center' }}>
                         <span style={{
                           padding: '2px 8px',
                           borderRadius: '4px',
@@ -80,8 +125,15 @@ export default function ObeDashboard({ assessments,  obeMetrics, gradesData, isP
                           {m.avgAchieved}
                         </span>
                       </td>
-                      <td>{m.density.toFixed(2)}%</td>
-                      <td style={{ textAlign: 'center' }}>
+                    );
+                  })}
+                </tr>
+                <tr>
+                  <td style={{ fontWeight: 'bold' }}>Is the targeted Density (&gt;=50%) achieved?</td>
+                  {cloKeys.map(cloNo => {
+                    const m = cloMetrics[cloNo];
+                    return (
+                      <td key={cloNo} style={{ textAlign: 'center' }}>
                         <span style={{
                           padding: '2px 8px',
                           borderRadius: '4px',
@@ -93,9 +145,9 @@ export default function ObeDashboard({ assessments,  obeMetrics, gradesData, isP
                           {m.densityAchieved}
                         </span>
                       </td>
-                    </tr>
-                  );
-                })}
+                    );
+                  })}
+                </tr>
               </tbody>
             </table>
           </div>
@@ -103,7 +155,7 @@ export default function ObeDashboard({ assessments,  obeMetrics, gradesData, isP
 
         {/* Graphical CLO Bar Chart */}
         <div className="view-card">
-          <h2>CLO Average Marks Bar Chart</h2>
+          <h2 style={{ fontSize: '1.2rem', color: '#1e3a8a', fontWeight: '700', marginBottom: '12px', borderBottom: '1px solid #cbd5e1', paddingBottom: '4px', textTransform: 'uppercase' }}>CLO Average Marks Bar Chart</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '14px' }}>
             {Object.keys(cloMetrics).map(cloNo => {
               const m = cloMetrics[cloNo];
@@ -111,22 +163,22 @@ export default function ObeDashboard({ assessments,  obeMetrics, gradesData, isP
               return (
                 <div key={cloNo} style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                   <div style={{ width: '80px', fontWeight: 600, fontSize: '0.875rem' }}>{cloNo}</div>
-                  <div style={{ flex: 1, height: '24px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid var(--border-color)', overflow: 'hidden', position: 'relative' }}>
-                    <div style={{
+                  <div className="chart-track" style={{ flex: 1, height: '24px', overflow: 'hidden', position: 'relative' }}>
+                    <div className={`chart-bar-fill ${pct >= 50 ? 'success' : 'danger'}`} style={{
                       width: `${Math.min(pct, 100)}%`,
                       height: '100%',
-                      background: pct >= 50 ? 'var(--grad-secondary)' : 'var(--danger)',
                       borderRadius: '11px',
-                      transition: 'width 0.6s ease'
+                      transition: 'width 0.6s ease',
+                      WebkitPrintColorAdjust: 'exact',
+                      printColorAdjust: 'exact'
                     }} />
-                    <span style={{
+                    <span className="chart-bar-text" style={{
                       position: 'absolute',
                       right: '12px',
                       top: '50%',
                       transform: 'translateY(-50%)',
                       fontSize: '0.75rem',
-                      fontWeight: 700,
-                      color: '#fff'
+                      fontWeight: 700
                     }}>
                       {pct.toFixed(1)}%
                     </span>
@@ -144,55 +196,122 @@ export default function ObeDashboard({ assessments,  obeMetrics, gradesData, isP
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
         <div className="view-card">
-          <h2>PLO Class Target Analysis</h2>
+          <h2 style={{ fontSize: '1.2rem', color: '#1e3a8a', fontWeight: '700', marginBottom: '12px', borderBottom: '1px solid #cbd5e1', paddingBottom: '4px', textTransform: 'uppercase' }}>PLO Class Target Analysis</h2>
           <div className="table-container">
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>PLO Code</th>
-                  <th>Allocated Weight (%)</th>
-                  <th>Class Average Score (%)</th>
-                  <th style={{ textAlign: 'center' }}>Target Avg (50%) Achieved?</th>
-                  <th>Density Rate (%)</th>
-                  <th style={{ textAlign: 'center' }}>Target Density (50%) Achieved?</th>
+                  <th>Metrics / PLO</th>
+                  {Object.keys(ploMetrics)
+                    .filter(ploNo => ploMetrics[ploNo].allocatedMax > 0)
+                    .map(ploNo => (
+                      <th key={ploNo} style={{ textAlign: 'center' }}>{ploNo}</th>
+                    ))}
                 </tr>
               </thead>
               <tbody>
-                {Object.keys(ploMetrics).map(ploNo => {
-                  const m = ploMetrics[ploNo];
-                  return (
-                    <tr key={ploNo}>
-                      <td style={{ fontWeight: 'bold' }}>{ploNo}</td>
-                      <td>{m.allocatedMax.toFixed(2)}%</td>
-                      <td>{m.percentageAverage.toFixed(2)}%</td>
-                      <td style={{ textAlign: 'center' }}>
-                        <span style={{
-                          padding: '2px 8px',
-                          borderRadius: '4px',
-                          fontSize: '0.8rem',
-                          fontWeight: 600,
-                          background: m.avgAchieved === 'Yes' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
-                          color: m.avgAchieved === 'Yes' ? 'var(--secondary)' : 'var(--danger)'
-                        }}>
-                          {m.avgAchieved}
-                        </span>
+                <tr>
+                  <td style={{ fontWeight: 'bold' }}>Allocated Weight (%)</td>
+                  {Object.keys(ploMetrics)
+                    .filter(ploNo => ploMetrics[ploNo].allocatedMax > 0)
+                    .map(ploNo => (
+                      <td key={ploNo} style={{ textAlign: 'center' }}>{ploMetrics[ploNo].allocatedMax.toFixed(2)}</td>
+                    ))}
+                </tr>
+                <tr>
+                  <td style={{ fontWeight: 'bold' }}>Middle Marks</td>
+                  {Object.keys(ploMetrics)
+                    .filter(ploNo => ploMetrics[ploNo].allocatedMax > 0)
+                    .map(ploNo => (
+                      <td key={ploNo} style={{ textAlign: 'center' }}>{(ploMetrics[ploNo].allocatedMax / 2).toFixed(2)}</td>
+                    ))}
+                </tr>
+                <tr>
+                  <td style={{ fontWeight: 'bold' }}>Average Marks</td>
+                  {Object.keys(ploMetrics)
+                    .filter(ploNo => ploMetrics[ploNo].allocatedMax > 0)
+                    .map(ploNo => (
+                      <td key={ploNo} style={{ textAlign: 'center' }}>
+                        {ploMetrics[ploNo].averageScore ? ploMetrics[ploNo].averageScore.toFixed(2) : '0.00'}
                       </td>
-                      <td>{m.density.toFixed(2)}%</td>
-                      <td style={{ textAlign: 'center' }}>
-                        <span style={{
-                          padding: '2px 8px',
-                          borderRadius: '4px',
-                          fontSize: '0.8rem',
-                          fontWeight: 600,
-                          background: m.densityAchieved === 'Yes' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
-                          color: m.densityAchieved === 'Yes' ? 'var(--secondary)' : 'var(--danger)'
-                        }}>
-                          {m.densityAchieved}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
+                    ))}
+                </tr>
+                <tr>
+                  <td style={{ fontWeight: 'bold' }}>Percentage Average Marks (%)</td>
+                  {Object.keys(ploMetrics)
+                    .filter(ploNo => ploMetrics[ploNo].allocatedMax > 0)
+                    .map(ploNo => (
+                      <td key={ploNo} style={{ textAlign: 'center' }}>{ploMetrics[ploNo].percentageAverage.toFixed(2)}%</td>
+                    ))}
+                </tr>
+                <tr>
+                  <td style={{ fontWeight: 'bold' }}>Overall Average Score (%) for each PLO</td>
+                  {Object.keys(ploMetrics)
+                    .filter(ploNo => ploMetrics[ploNo].allocatedMax > 0)
+                    .map(ploNo => (
+                      <td key={ploNo} style={{ textAlign: 'center' }}>{ploMetrics[ploNo].percentageAverage.toFixed(2)}%</td>
+                    ))}
+                </tr>
+                <tr>
+                  <td style={{ fontWeight: 'bold' }}>No of students scoring equal or more than 50% of the allocated marks</td>
+                  {Object.keys(ploMetrics)
+                    .filter(ploNo => ploMetrics[ploNo].allocatedMax > 0)
+                    .map(ploNo => (
+                      <td key={ploNo} style={{ textAlign: 'center' }}>{ploMetrics[ploNo].passCount || 0}</td>
+                    ))}
+                </tr>
+                <tr>
+                  <td style={{ fontWeight: 'bold' }}>Density (%) [Percentage of students scoring equal or more than 50% of the allocated marks]</td>
+                  {Object.keys(ploMetrics)
+                    .filter(ploNo => ploMetrics[ploNo].allocatedMax > 0)
+                    .map(ploNo => (
+                      <td key={ploNo} style={{ textAlign: 'center' }}>{ploMetrics[ploNo].density.toFixed(2)}%</td>
+                    ))}
+                </tr>
+                <tr>
+                  <td style={{ fontWeight: 'bold' }}>Is the targeted Average (&gt;=50%) achieved?</td>
+                  {Object.keys(ploMetrics)
+                    .filter(ploNo => ploMetrics[ploNo].allocatedMax > 0)
+                    .map(ploNo => {
+                      const m = ploMetrics[ploNo];
+                      return (
+                        <td key={ploNo} style={{ textAlign: 'center' }}>
+                          <span style={{
+                            padding: '2px 8px',
+                            borderRadius: '4px',
+                            fontSize: '0.8rem',
+                            fontWeight: 600,
+                            background: m.avgAchieved === 'Yes' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                            color: m.avgAchieved === 'Yes' ? 'var(--secondary)' : 'var(--danger)'
+                          }}>
+                            {m.avgAchieved}
+                          </span>
+                        </td>
+                      );
+                    })}
+                </tr>
+                <tr>
+                  <td style={{ fontWeight: 'bold' }}>Is the targeted Density (&gt;=50%) achieved?</td>
+                  {Object.keys(ploMetrics)
+                    .filter(ploNo => ploMetrics[ploNo].allocatedMax > 0)
+                    .map(ploNo => {
+                      const m = ploMetrics[ploNo];
+                      return (
+                        <td key={ploNo} style={{ textAlign: 'center' }}>
+                          <span style={{
+                            padding: '2px 8px',
+                            borderRadius: '4px',
+                            fontSize: '0.8rem',
+                            fontWeight: 600,
+                            background: m.densityAchieved === 'Yes' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                            color: m.densityAchieved === 'Yes' ? 'var(--secondary)' : 'var(--danger)'
+                          }}>
+                            {m.densityAchieved}
+                          </span>
+                        </td>
+                      );
+                    })}
+                </tr>
               </tbody>
             </table>
           </div>
@@ -200,7 +319,7 @@ export default function ObeDashboard({ assessments,  obeMetrics, gradesData, isP
 
         {/* Graphical PLO Bar Chart */}
         <div className="view-card">
-          <h2>PLO Average Marks Bar Chart</h2>
+          <h2 style={{ fontSize: '1.2rem', color: '#1e3a8a', fontWeight: '700', marginBottom: '12px', borderBottom: '1px solid #cbd5e1', paddingBottom: '4px', textTransform: 'uppercase' }}>PLO Average Marks Bar Chart</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '14px' }}>
             {Object.keys(ploMetrics)
               .filter(ploNo => ploMetrics[ploNo].allocatedMax > 0)
@@ -210,22 +329,22 @@ export default function ObeDashboard({ assessments,  obeMetrics, gradesData, isP
                 return (
                   <div key={ploNo} style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                     <div style={{ width: '80px', fontWeight: 600, fontSize: '0.875rem' }}>{ploNo}</div>
-                    <div style={{ flex: 1, height: '24px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid var(--border-color)', overflow: 'hidden', position: 'relative' }}>
-                      <div style={{
+                    <div className="chart-track" style={{ flex: 1, height: '24px', overflow: 'hidden', position: 'relative' }}>
+                      <div className={`chart-bar-fill ${pct >= 50 ? 'success' : 'danger'}`} style={{
                         width: `${Math.min(pct, 100)}%`,
                         height: '100%',
-                        background: pct >= 50 ? 'var(--grad-secondary)' : 'var(--danger)',
                         borderRadius: '11px',
-                        transition: 'width 0.6s ease'
+                        transition: 'width 0.6s ease',
+                        WebkitPrintColorAdjust: 'exact',
+                        printColorAdjust: 'exact'
                       }} />
-                      <span style={{
+                      <span className="chart-bar-text" style={{
                         position: 'absolute',
                         right: '12px',
                         top: '50%',
                         transform: 'translateY(-50%)',
                         fontSize: '0.75rem',
-                        fontWeight: 700,
-                        color: '#fff'
+                        fontWeight: 700
                       }}>
                         {pct.toFixed(1)}%
                       </span>
@@ -244,15 +363,23 @@ export default function ObeDashboard({ assessments,  obeMetrics, gradesData, isP
     const clos = Array.from(new Set(assessments.map(a => a.clo_no))).sort();
     return (
       <div className="view-card">
-        <h2>Student Personal CLO Breakdown</h2>
+        <h2 style={{ fontSize: '1.2rem', color: '#1e3a8a', fontWeight: '700', marginBottom: '12px', borderBottom: '1px solid #cbd5e1', paddingBottom: '4px', textTransform: 'uppercase' }}>Student Personal CLO Breakdown</h2>
         <div className="table-container">
           <table className="data-table">
             <thead>
               <tr>
-                <th>Matric ID</th>
-                <th>Student Name</th>
+                <th rowSpan={2}>Matric ID</th>
+                <th rowSpan={2}>Student Name</th>
                 {clos.map(c => (
-                  <th key={c}>{c}</th>
+                  <th key={c} colSpan={2} style={{ textAlign: 'center' }}>{c}</th>
+                ))}
+              </tr>
+              <tr>
+                {clos.map(c => (
+                  <React.Fragment key={c + '-sub'}>
+                    <th style={{ textAlign: 'center', fontSize: '0.8rem', background: 'rgba(255,255,255,0.02)' }}>Score</th>
+                    <th style={{ textAlign: 'center', fontSize: '0.8rem', background: 'rgba(255,255,255,0.02)' }}>%</th>
+                  </React.Fragment>
                 ))}
               </tr>
             </thead>
@@ -263,10 +390,17 @@ export default function ObeDashboard({ assessments,  obeMetrics, gradesData, isP
                   <td>{student.name}</td>
                   {clos.map(c => {
                     const score = student.cloScores?.[c] || 0;
+                    const max = cloMetrics[c]?.allocatedMax || 0;
+                    const pct = max > 0 ? (score / max) * 100 : 0;
                     return (
-                      <td key={c} style={{ fontWeight: 500, color: 'var(--text-active)' }}>
-                        {score.toFixed(2)}
-                      </td>
+                      <React.Fragment key={c}>
+                        <td style={{ fontWeight: 500, color: 'var(--text-active)', textAlign: 'center' }}>
+                          {score.toFixed(2)}
+                        </td>
+                        <td style={{ fontWeight: 500, color: pct >= 50 ? 'var(--secondary)' : 'var(--danger)', textAlign: 'center', background: 'rgba(255,255,255,0.01)' }}>
+                          {pct.toFixed(2)}%
+                        </td>
+                      </React.Fragment>
                     );
                   })}
                 </tr>
@@ -282,15 +416,23 @@ export default function ObeDashboard({ assessments,  obeMetrics, gradesData, isP
     const plos = Array.from(new Set(assessments.map(a => a.plo_no))).sort();
     return (
       <div className="view-card">
-        <h2>Student Personal PLO Breakdown</h2>
+        <h2 style={{ fontSize: '1.2rem', color: '#1e3a8a', fontWeight: '700', marginBottom: '12px', borderBottom: '1px solid #cbd5e1', paddingBottom: '4px', textTransform: 'uppercase' }}>Student Personal PLO Breakdown</h2>
         <div className="table-container">
           <table className="data-table">
             <thead>
               <tr>
-                <th>Matric ID</th>
-                <th>Student Name</th>
+                <th rowSpan={2}>Matric ID</th>
+                <th rowSpan={2}>Student Name</th>
                 {plos.map(p => (
-                  <th key={p}>{p}</th>
+                  <th key={p} colSpan={2} style={{ textAlign: 'center' }}>{p}</th>
+                ))}
+              </tr>
+              <tr>
+                {plos.map(p => (
+                  <React.Fragment key={p + '-sub'}>
+                    <th style={{ textAlign: 'center', fontSize: '0.8rem', background: 'rgba(255,255,255,0.02)' }}>Score</th>
+                    <th style={{ textAlign: 'center', fontSize: '0.8rem', background: 'rgba(255,255,255,0.02)' }}>%</th>
+                  </React.Fragment>
                 ))}
               </tr>
             </thead>
@@ -301,10 +443,17 @@ export default function ObeDashboard({ assessments,  obeMetrics, gradesData, isP
                   <td>{student.name}</td>
                   {plos.map(p => {
                     const score = student.ploScores?.[p] || 0;
+                    const max = ploMetrics[p]?.allocatedMax || 0;
+                    const pct = max > 0 ? (score / max) * 100 : 0;
                     return (
-                      <td key={p} style={{ fontWeight: 500, color: 'var(--text-active)' }}>
-                        {score.toFixed(2)}
-                      </td>
+                      <React.Fragment key={p}>
+                        <td style={{ fontWeight: 500, color: 'var(--text-active)', textAlign: 'center' }}>
+                          {score.toFixed(2)}
+                        </td>
+                        <td style={{ fontWeight: 500, color: pct >= 50 ? 'var(--secondary)' : 'var(--danger)', textAlign: 'center', background: 'rgba(255,255,255,0.01)' }}>
+                          {pct.toFixed(2)}%
+                        </td>
+                      </React.Fragment>
                     );
                   })}
                 </tr>
@@ -354,11 +503,11 @@ export default function ObeDashboard({ assessments,  obeMetrics, gradesData, isP
                 <div key={k} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', width: '100%' }}>
                   <div style={{ display: 'flex', alignItems: 'flex-end', height: '100%', gap: '4px', width: '100%', justifyContent: 'center' }}>
                     {/* Previous Semester Bar */}
-                    <div className="no-print-bg" style={{ width: '30%', maxWidth: '30px', height: `${Math.min(100, Math.max(0, prevVal))}%`, backgroundColor: '#94a3b8', WebkitPrintColorAdjust: 'exact', position: 'relative', borderTopLeftRadius: '2px', borderTopRightRadius: '2px' }}>
+                    <div className="attainment-bar-prev" style={{ width: '30%', maxWidth: '30px', height: `${Math.min(100, Math.max(0, prevVal))}%`, WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact', position: 'relative', borderTopLeftRadius: '2px', borderTopRightRadius: '2px' }}>
                        <span style={{ position: 'absolute', top: '-18px', left: '50%', transform: 'translateX(-50%)', fontSize: '0.7rem', color: '#555' }}>{prevVal > 0 ? `${prevVal}%` : ''}</span>
                     </div>
                     {/* Current Semester Bar */}
-                    <div className="no-print-bg" style={{ width: '30%', maxWidth: '30px', height: `${Math.min(100, Math.max(0, curVal))}%`, backgroundColor: '#3b82f6', WebkitPrintColorAdjust: 'exact', position: 'relative', borderTopLeftRadius: '2px', borderTopRightRadius: '2px' }}>
+                    <div className="attainment-bar-curr" style={{ width: '30%', maxWidth: '30px', height: `${Math.min(100, Math.max(0, curVal))}%`, WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact', position: 'relative', borderTopLeftRadius: '2px', borderTopRightRadius: '2px' }}>
                        <span style={{ position: 'absolute', top: '-18px', left: '50%', transform: 'translateX(-50%)', fontSize: '0.7rem', color: '#1e3a8a', fontWeight: 'bold' }}>{curVal.toFixed(0)}%</span>
                     </div>
                   </div>
@@ -369,10 +518,10 @@ export default function ObeDashboard({ assessments,  obeMetrics, gradesData, isP
           </div>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', marginTop: '16px', fontSize: '0.85rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <div style={{ width: '12px', height: '12px', backgroundColor: '#94a3b8', WebkitPrintColorAdjust: 'exact', borderRadius: '2px' }}></div> Previous Semester
+              <div className="attainment-legend-prev" style={{ width: '12px', height: '12px', borderRadius: '2px' }}></div> Previous Semester
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <div style={{ width: '12px', height: '12px', backgroundColor: '#3b82f6', WebkitPrintColorAdjust: 'exact', borderRadius: '2px' }}></div> Current Semester
+              <div className="attainment-legend-curr" style={{ width: '12px', height: '12px', borderRadius: '2px' }}></div> Current Semester
             </div>
           </div>
         </div>
@@ -388,7 +537,7 @@ export default function ObeDashboard({ assessments,  obeMetrics, gradesData, isP
         
         {/* Course Specifications */}
         <div style={{ marginBottom: '24px' }}>
-          <h2 style={{ fontSize: '1.2rem', marginBottom: '12px', fontWeight: 'bold' }}>Course Specifications</h2>
+          <h2 style={{ fontSize: '1.2rem', color: '#1e3a8a', fontWeight: '700', marginBottom: '12px', borderBottom: '1px solid #cbd5e1', paddingBottom: '4px', textTransform: 'uppercase' }}>Course Specifications</h2>
           <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <li><strong>Course Code:</strong> {cqiInfo.course_code || 'N/A'}</li>
             <li><strong>Course Name:</strong> {cqiInfo.course_name || 'N/A'}</li>
@@ -403,7 +552,7 @@ export default function ObeDashboard({ assessments,  obeMetrics, gradesData, isP
 
         {/* Grade Distribution */}
         <div style={{ marginBottom: '24px' }}>
-          <h2 style={{ fontSize: '1.2rem', marginBottom: '12px', fontWeight: 'bold' }}>Grade Distribution</h2>
+          <h2 style={{ fontSize: '1.2rem', color: '#1e3a8a', fontWeight: '700', marginBottom: '12px', borderBottom: '1px solid #cbd5e1', paddingBottom: '4px', textTransform: 'uppercase' }}>Grade Distribution</h2>
           <div className="table-container">
             <table className="data-table" style={{ width: '100%', textAlign: 'center', borderCollapse: 'collapse' }}>
               <thead>
@@ -448,7 +597,7 @@ export default function ObeDashboard({ assessments,  obeMetrics, gradesData, isP
 
         {/* CLO Attainment */}
         <div style={{ marginBottom: '24px' }}>
-          <h2 style={{ fontSize: '1.2rem', marginBottom: '12px', fontWeight: 'bold' }}>Course Learning Outcome (CLO) Attainment</h2>
+          <h2 style={{ fontSize: '1.2rem', color: '#1e3a8a', fontWeight: '700', marginBottom: '12px', borderBottom: '1px solid #cbd5e1', paddingBottom: '4px', textTransform: 'uppercase' }}>Course Learning Outcome (CLO) Attainment</h2>
           <div className="table-container" style={{ marginBottom: '16px' }}>
             <table className="data-table" style={{ width: '100%', textAlign: 'center', borderCollapse: 'collapse' }}>
               <thead>
@@ -502,7 +651,7 @@ export default function ObeDashboard({ assessments,  obeMetrics, gradesData, isP
 
         {/* PLO Attainment */}
         <div style={{ marginBottom: '24px' }}>
-          <h2 style={{ fontSize: '1.2rem', marginBottom: '12px', fontWeight: 'bold' }}>Program Learning Outcome (PLO) Attainment</h2>
+          <h2 style={{ fontSize: '1.2rem', color: '#1e3a8a', fontWeight: '700', marginBottom: '12px', borderBottom: '1px solid #cbd5e1', paddingBottom: '4px', textTransform: 'uppercase' }}>Program Learning Outcome (PLO) Attainment</h2>
           <div className="table-container" style={{ marginBottom: '16px', overflowX: 'auto' }}>
             <table className="data-table" style={{ width: '100%', textAlign: 'center', borderCollapse: 'collapse' }}>
               <thead>
@@ -556,7 +705,7 @@ export default function ObeDashboard({ assessments,  obeMetrics, gradesData, isP
 
         {/* Review and CQI */}
         <div style={{ marginBottom: '40px', pageBreakInside: 'avoid' }}>
-          <h2 style={{ fontSize: '1.2rem', marginBottom: '16px', fontWeight: 'bold' }}>Review and Continuous Quality Improvement (CQI)</h2>
+          <h2 style={{ fontSize: '1.2rem', color: '#1e3a8a', fontWeight: '700', marginBottom: '16px', borderBottom: '1px solid #cbd5e1', paddingBottom: '4px', textTransform: 'uppercase' }}>Review and Continuous Quality Improvement (CQI)</h2>
           
           <div style={{ marginBottom: '16px' }}>
             <strong style={{ display: 'block', marginBottom: '8px' }}>• General Remarks on the CLO and PLO performance:</strong>
@@ -605,7 +754,7 @@ export default function ObeDashboard({ assessments,  obeMetrics, gradesData, isP
 
         {/* Specific Outcomes Improvement Plan */}
         <div style={{ marginBottom: '24px' }}>
-          <h2 style={{ fontSize: '1.2rem', marginBottom: '12px', fontWeight: 'bold' }}>Specific Outcomes Improvement Plan</h2>
+          <h2 style={{ fontSize: '1.2rem', color: '#1e3a8a', fontWeight: '700', marginBottom: '12px', borderBottom: '1px solid #cbd5e1', paddingBottom: '4px', textTransform: 'uppercase' }}>Specific Outcomes Improvement Plan</h2>
           <p className="no-print" style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '16px' }}>
             This section automatically identifies CLOs and PLOs that did not meet the required KPIs. Please provide your proposed actions for improvement for each individually.
           </p>
@@ -682,16 +831,75 @@ export default function ObeDashboard({ assessments,  obeMetrics, gradesData, isP
             <strong>Date:</strong> ________________
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '40px', marginTop: '20px' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <div style={{ marginBottom: '40px' }}>[ Signed ]</div>
+
+            {/* Course Leader Signature */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: '180px' }}>
+              {/* Screen-only upload */}
+              <div className="no-print" style={{ marginBottom: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: '600' }}>Upload Course Leader Signature</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  style={{ fontSize: '0.75rem', maxWidth: '180px' }}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = (ev) => setCourseLeaderSig(ev.target?.result as string);
+                    reader.readAsDataURL(file);
+                  }}
+                />
+                {courseLeaderSig && (
+                  <button
+                    onClick={() => setCourseLeaderSig('')}
+                    style={{ fontSize: '0.7rem', color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}
+                  >✕ Remove</button>
+                )}
+              </div>
+              {/* Signature image — shown on screen if uploaded, shown on print always */}
+              <div style={{ height: '60px', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', marginBottom: '4px' }}>
+                {courseLeaderSig
+                  ? <img src={courseLeaderSig} alt="Course Leader Signature" style={{ maxHeight: '56px', maxWidth: '160px', objectFit: 'contain' }} />
+                  : <div style={{ height: '56px' }} />}
+              </div>
               <div>____________________</div>
               <div style={{ marginTop: '8px' }}>Course Leader</div>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <div style={{ marginBottom: '40px' }}>[ Signed ]</div>
+
+            {/* Program Leader Signature */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: '180px' }}>
+              {/* Screen-only upload */}
+              <div className="no-print" style={{ marginBottom: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: '600' }}>Upload Program Leader Signature</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  style={{ fontSize: '0.75rem', maxWidth: '180px' }}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = (ev) => setProgramLeaderSig(ev.target?.result as string);
+                    reader.readAsDataURL(file);
+                  }}
+                />
+                {programLeaderSig && (
+                  <button
+                    onClick={() => setProgramLeaderSig('')}
+                    style={{ fontSize: '0.7rem', color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}
+                  >✕ Remove</button>
+                )}
+              </div>
+              {/* Signature image — shown on screen if uploaded, shown on print always */}
+              <div style={{ height: '60px', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', marginBottom: '4px' }}>
+                {programLeaderSig
+                  ? <img src={programLeaderSig} alt="Program Leader Signature" style={{ maxHeight: '56px', maxWidth: '160px', objectFit: 'contain' }} />
+                  : <div style={{ height: '56px' }} />}
+              </div>
               <div>____________________</div>
               <div style={{ marginTop: '8px' }}>Head of Program</div>
             </div>
+
           </div>
         </div>
         
@@ -704,7 +912,7 @@ export default function ObeDashboard({ assessments,  obeMetrics, gradesData, isP
                   if (courseInfo?.portfolio_data) {
                     currentData = typeof courseInfo.portfolio_data === 'string' ? JSON.parse(courseInfo.portfolio_data) : courseInfo.portfolio_data;
                   }
-                  currentData.cqi = { prevCloScores, prevPloScores, cqiActions };
+                  currentData.cqi = { prevCloScores, prevPloScores, cqiActions, signatures: { courseLeader: courseLeaderSig || '', programLeader: programLeaderSig || '' } };
                   
                   const res = await fetch(`${API_BASE}/courses/${activeCourseId}/portfolio`, {
                     method: 'POST',
@@ -795,7 +1003,16 @@ export default function ObeDashboard({ assessments,  obeMetrics, gradesData, isP
 
             {!isPrintMode && activeSubTab !== 'cqi' && (
             <div className="only-print" style={{ marginBottom: '20px' }}>
-              <PrintHeader title="OBE Assessment" courseInfo={courseInfo || null} />
+              <PrintHeader
+                title={
+                  activeSubTab === 'clo' ? 'CLO Analysis' :
+                  activeSubTab === 'plo' ? 'PLO Analysis' :
+                  activeSubTab === 'student-clo' ? 'Student CLO Breakdown' :
+                  activeSubTab === 'student-plo' ? 'Student PLO Breakdown' :
+                  'OBE Assessment'
+                }
+                courseInfo={courseInfo || null}
+              />
             </div>
           )}
 

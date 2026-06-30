@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
+import { supabase } from '../supabaseClient';
 
 interface LoginProps {
   onLogin: (token: string) => void;
   API_BASE: string;
 }
 
-const Login: React.FC<LoginProps> = ({ onLogin, API_BASE }) => {
+const Login: React.FC<LoginProps> = ({ onLogin }) => {
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -16,21 +18,21 @@ const Login: React.FC<LoginProps> = ({ onLogin, API_BASE }) => {
     setError('');
 
     try {
-      const res = await fetch(`${API_BASE}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password })
+      const { data, error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password
       });
 
-      const data = await res.json();
-      
-      if (res.ok && data.token) {
-        onLogin(data.token);
+      if (authError) {
+        setError(authError.message);
+      } else if (data?.session) {
+        onLogin(data.session.access_token);
       } else {
-        setError(data.error || 'Invalid password');
+        setError('No session established');
       }
     } catch (err) {
-      setError('Failed to connect to server');
+      console.error(err);
+      setError('Failed to connect to authentication server');
     } finally {
       setLoading(false);
     }
@@ -42,77 +44,134 @@ const Login: React.FC<LoginProps> = ({ onLogin, API_BASE }) => {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      background: '#0f1624',
-      fontFamily: 'Inter, sans-serif'
+      background: 'linear-gradient(135deg, #f6f8fb 0%, #f1f5f9 100%)',
+      padding: '20px',
+      fontFamily: "'Inter', sans-serif"
     }}>
       <div style={{
-        background: '#1a2333',
+        background: 'rgba(255, 255, 255, 0.95)',
+        backdropFilter: 'blur(10px)',
         padding: '40px',
-        borderRadius: '12px',
-        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+        borderRadius: '24px',
+        boxShadow: '0 20px 40px rgba(0,0,0,0.05), 0 1px 3px rgba(0,0,0,0.05)',
         width: '100%',
-        maxWidth: '400px',
-        border: '1px solid #2a3a5a'
+        maxWidth: '400px'
       }}>
-        <h2 style={{ 
-          color: '#e2e8f0', 
-          textAlign: 'center', 
-          marginBottom: '24px',
-          fontSize: '1.5rem',
-          fontWeight: '600'
-        }}>
-          Admin Login
-        </h2>
-        
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+          <h1 style={{
+            margin: 0,
+            fontSize: '28px',
+            fontWeight: 700,
+            color: '#1e293b',
+            letterSpacing: '-0.5px'
+          }}>Welcome Back</h1>
+          <p style={{
+            margin: '8px 0 0 0',
+            color: '#64748b',
+            fontSize: '15px'
+          }}>Sign in to access Course Manager</p>
+        </div>
+
+        {error && (
+          <div style={{
+            background: '#fef2f2',
+            color: '#ef4444',
+            padding: '12px 16px',
+            borderRadius: '12px',
+            marginBottom: '24px',
+            fontSize: '14px',
+            fontWeight: 500,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div>
-            <label style={{ display: 'block', marginBottom: '8px', color: '#94a3b8', fontSize: '0.9rem' }}>
-              Password
-            </label>
+            <label style={{
+              display: 'block',
+              marginBottom: '8px',
+              color: '#334155',
+              fontWeight: 600,
+              fontSize: '14px'
+            }}>Email Address</label>
             <input
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              placeholder="Enter access password"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               style={{
                 width: '100%',
-                padding: '12px',
-                borderRadius: '6px',
-                border: '1px solid #2a3a5a',
-                background: '#0f1624',
-                color: '#e2e8f0',
-                fontSize: '1rem',
+                padding: '12px 16px',
+                borderRadius: '12px',
+                border: '1px solid #e2e8f0',
+                background: '#f8fafc',
+                fontSize: '15px',
+                color: '#1e293b',
+                transition: 'all 0.2s ease',
                 outline: 'none',
                 boxSizing: 'border-box'
               }}
+              placeholder="Enter your email"
               required
             />
           </div>
 
-          {error && (
-            <div style={{ color: '#ef4444', fontSize: '0.875rem', textAlign: 'center' }}>
-              {error}
-            </div>
-          )}
+          <div>
+            <label style={{
+              display: 'block',
+              marginBottom: '8px',
+              color: '#334155',
+              fontWeight: 600,
+              fontSize: '14px'
+            }}>Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '12px 16px',
+                borderRadius: '12px',
+                border: '1px solid #e2e8f0',
+                background: '#f8fafc',
+                fontSize: '15px',
+                color: '#1e293b',
+                transition: 'all 0.2s ease',
+                outline: 'none',
+                boxSizing: 'border-box'
+              }}
+              placeholder="Enter password"
+              required
+            />
+          </div>
 
           <button
             type="submit"
             disabled={loading}
             style={{
-              padding: '12px',
-              background: '#3b82f6',
+              marginTop: '8px',
+              width: '100%',
+              padding: '14px',
+              background: loading ? '#94a3b8' : '#3b82f6',
               color: 'white',
               border: 'none',
-              borderRadius: '6px',
-              fontSize: '1rem',
-              fontWeight: '500',
+              borderRadius: '12px',
+              fontSize: '16px',
+              fontWeight: 600,
               cursor: loading ? 'not-allowed' : 'pointer',
-              opacity: loading ? 0.7 : 1,
-              marginTop: '8px',
-              transition: 'background 0.2s'
+              transition: 'background 0.2s ease',
+              boxShadow: loading ? 'none' : '0 4px 6px rgba(59, 130, 246, 0.2)'
             }}
           >
-            {loading ? 'Authenticating...' : 'Login'}
+            {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
       </div>

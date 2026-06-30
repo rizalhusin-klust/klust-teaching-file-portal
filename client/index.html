@@ -5,7 +5,25 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>client</title>
-  </head>
+  
+<script>
+  window.addEventListener('error', function(e) {
+    fetch('http://localhost:3001/api/log-error', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: e.message, filename: e.filename, lineno: e.lineno, colno: e.colno, error: e.error ? e.error.stack : null })
+    }).catch(err => console.error(err));
+  });
+  window.addEventListener('unhandledrejection', function(e) {
+    fetch('http://localhost:3001/api/log-error', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: e.reason ? e.reason.message || String(e.reason) : 'Unhandled Rejection', error: e.reason ? e.reason.stack : null })
+    }).catch(err => console.error(err));
+  });
+</script>
+
+</head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>

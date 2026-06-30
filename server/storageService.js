@@ -1,11 +1,10 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import admin from 'firebase-admin';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const uploadsDir = path.resolve(__dirname, 'uploads');
+const uploadsDir = process.env.APP_DATA_PATH ? path.join(process.env.APP_DATA_PATH, 'uploads') : path.resolve(__dirname, 'uploads');
 
 export async function uploadFile(courseId, fileName, folder, buffer, mimeType) {
   const useFirebase = process.env.NODE_ENV === 'production' || process.env.DB_TYPE === 'firestore';

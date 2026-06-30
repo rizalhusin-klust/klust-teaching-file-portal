@@ -543,13 +543,21 @@ export default function CoursePortfolio({ courseInfo, onRefresh, API_BASE, activ
 
       {/* ── Print-Only Header ── */}
       <div className="only-print teaching-file-cover-container" style={{ maxWidth: '100%', margin: 0, padding: '0 0 1rem 0', borderBottom: '2px solid #1e3a8a', marginBottom: '0.25rem', background: '#ffffff', color: '#000000' }}>
-        <div style={{ textAlign: 'left', marginBottom: '1.25rem' }}>
-          <h1 className="cover-title" style={{ textAlign: 'left', fontSize: '1.4rem', color: '#1e3a8a', fontWeight: 700, margin: '0 0 0.25rem 0' }}>
-            KUALA LUMPUR UNIVERSITY OF<br />SCIENCE AND TECHNOLOGY
-          </h1>
-          <div className="cover-subtitle" style={{ textAlign: 'left', fontSize: '1.3rem', fontWeight: 300, color: '#1e3a8a', margin: '0.4rem 0', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            {printMode === 'exam' ? 'Examination Script Samples' : printMode === 'coursework' ? 'Coursework Student Samples' : 'Course Portfolio'}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '20px', marginBottom: '1.25rem' }}>
+          <div style={{ textAlign: 'left' }}>
+            <h1 className="cover-title" style={{ textAlign: 'left', fontSize: '1.4rem', color: '#1e3a8a', fontWeight: 700, margin: '0 0 0.25rem 0', lineHeight: '1.2' }}>
+              <span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>KUALA LUMPUR UNIVERSITY</span>{' '}
+              <span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>OF SCIENCE AND TECHNOLOGY</span>
+            </h1>
+            <div className="cover-subtitle" style={{ textAlign: 'left', fontSize: '1.3rem', fontWeight: 300, color: '#1e3a8a', margin: '0.4rem 0 0 0', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              {printMode === 'exam' ? 'Examination Script Samples' : printMode === 'coursework' ? 'Coursework Student Samples' : 'Course Portfolio'}
+            </div>
           </div>
+          <img
+            src="https://raw.githubusercontent.com/rizalhusin-klust/klust-images/main/KLUST%20%20logo%20only.png"
+            alt="KLUST Logo"
+            style={{ width: '95px', height: 'auto', display: 'block', flexShrink: 0 }}
+          />
         </div>
         <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '1.25rem', fontSize: '0.875rem' }}>
           <tbody>

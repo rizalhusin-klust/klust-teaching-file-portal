@@ -1,17 +1,7 @@
 import sqliteDb from './database.js';
-import admin from 'firebase-admin';
 
-// Determine if we should use Firestore or local SQLite
-let dbType = process.env.DB_TYPE || 'sqlite';
-if (process.env.NODE_ENV === 'production') {
-  dbType = 'firestore';
-}
-
-if (dbType === 'firestore' && admin.apps.length === 0) {
-  admin.initializeApp();
-}
-
-const firestore = dbType === 'firestore' ? admin.firestore() : null;
+let dbType = 'sqlite'; // Forced local database mode for Electron
+const firestore = null;
 
 // SQLite Promise Helpers
 const sqliteAll = (sql, params = []) => {
@@ -154,7 +144,7 @@ export const dbService = {
       return { success: true, id: newId };
     } else {
       const res = await sqliteRun(`INSERT INTO course_info 
-        (course_code, course_name, credit_hours, lecturer, email, room_no, telephone, hp_no, consultation_hours, semester, start_date, end_date, session1_day, session1_start, session1_end, session2_day, session2_start, session2_end, cw_weightage, ex_weightage, pass_fail_mode, pass_mark, synopsis, references_list) 
+        (course_code, course_name, credit_hours, lecturer, email, room_no, telephone, hp_no, consultation_hours, semester, start_date, end_date, session1_day, session1_start, session1_end, session2_day, session2_start, session2_end, cw_weightage, ex_weightage, pass_fail_mode, pass_mark, synopsis, references_list, program_name, program_abb) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           data.course_code, data.course_name, Number(data.credit_hours), data.lecturer, data.email, data.room_no, data.telephone, data.hp_no, data.consultation_hours, data.semester, data.start_date, data.end_date, data.session1_day, data.session1_start, data.session1_end, data.session2_day, data.session2_start, data.session2_end,
@@ -767,7 +757,7 @@ export const dbService = {
       await firestore.collection('courses').doc(cidStr).collection('attendance').doc(key).set({
         student_matric_id: String(studentMatricId),
         session_date: sessionDate,
-        status: status || 'Y',
+        status: (status !== undefined && status !== null) ? status : 'Y',
         course_id: courseId
       });
       return { success: true };

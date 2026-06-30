@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react';
 import type { Student, AttendanceRecord, CourseInfo } from '../App';
+import PrintHeader from './PrintHeader';
 
 type AttendanceRegistryProps = {
   students: Student[];
   attendance: AttendanceRecord[];
-  onUpdateAttendance: (matricId: string, date: string, status: 'Y' | 'N' | 'MC') => void;
+  onUpdateAttendance: (matricId: string, date: string, status: 'Y' | 'N' | 'MC' | 'LR' | '') => void;
+  onUpdateAttendanceBulk?: (updates: { student_matric_id: string; session_date: string; status: 'Y' | 'N' | 'MC' | 'LR' | '' }[]) => void;
   courseInfo: CourseInfo | null;
   API_BASE?: string;
   activeCourseId?: number | null;
+  hidePrintHeader?: boolean;
 };
 
 // Dynamic course session dates calculator
@@ -57,8 +60,8 @@ function getCourseSessionDates(courseInfo: CourseInfo | null): string[] {
   return dates;
 }
 
-export default function AttendanceRegistry({ students, attendance, onUpdateAttendance, courseInfo, API_BASE, activeCourseId }: AttendanceRegistryProps) {
-  const [attendanceMap, setAttendanceMap] = useState<{ [key: string]: 'Y' | 'N' | 'MC' }>({});
+export default function AttendanceRegistry({ students, attendance, onUpdateAttendance, onUpdateAttendanceBulk, courseInfo, API_BASE, activeCourseId, hidePrintHeader = false }: AttendanceRegistryProps) {
+  const [attendanceMap, setAttendanceMap] = useState<{ [key: string]: 'Y' | 'N' | 'MC' | 'LR' | '' }>({});
 
   // Multiple PDF upload states
   type AttendancePdf = { key: string; url: string; name: string };
@@ -68,8 +71,88 @@ export default function AttendanceRegistry({ students, attendance, onUpdateAtten
 
   const dates = getCourseSessionDates(courseInfo);
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>, rowIndex: number, colIndex: number) => {
+    let nextRow = rowIndex;
+    let nextCol = colIndex;
+
+    switch (e.key) {
+      case 'ArrowUp':
+        nextRow = Math.max(0, rowIndex - 1);
+        break;
+      case 'ArrowDown':
+        nextRow = Math.min(students.length - 1, rowIndex + 1);
+        break;
+      case 'ArrowLeft':
+        nextCol = Math.max(0, colIndex - 1);
+        break;
+      case 'ArrowRight':
+        nextCol = Math.min(dates.length - 1, colIndex + 1);
+        break;
+      case ' ':
+      case 'Enter':
+        e.preventDefault();
+        const studentId = students[rowIndex].matric_id;
+        const sessionDate = dates[colIndex];
+        handleCellClick(studentId, sessionDate);
+        return;
+      default:
+        return;
+    }
+
+    if (nextRow !== rowIndex || nextCol !== colIndex) {
+      e.preventDefault();
+      const nextInput = document.getElementById(`attendance-cell-${nextRow}-${nextCol}`) as HTMLDivElement;
+      if (nextInput) {
+        nextInput.focus();
+      }
+    }
+  };
+
+  const handlePasteAttendance = (e: React.ClipboardEvent<HTMLDivElement>, startRowIndex: number, startColIndex: number) => {
+    e.preventDefault();
+    const pasteData = e.clipboardData.getData('text/plain');
+    if (!pasteData) return;
+
+    const rows = pasteData.split(/\r?\n/);
+    rows.forEach((row, rOffset) => {
+      if (rOffset === rows.length - 1 && row.trim() === '') return;
+      const cols = row.split('\t');
+      cols.forEach((val, cOffset) => {
+        const targetRow = startRowIndex + rOffset;
+        const targetCol = startColIndex + cOffset;
+        
+        if (targetRow < students.length && targetCol < dates.length) {
+          const studentId = students[targetRow].matric_id;
+          const sessionDate = dates[targetCol];
+          
+          let cleanedVal = val.trim().toUpperCase();
+          let status: 'Y' | 'N' | 'MC' | 'LR' | '' = '';
+          if (cleanedVal === 'Y' || cleanedVal === 'PRESENT' || cleanedVal === '1') {
+            status = 'Y';
+          } else if (cleanedVal === 'N' || cleanedVal === 'ABSENT' || cleanedVal === '0') {
+            status = 'N';
+          } else if (cleanedVal === 'MC' || cleanedVal === 'EXCUSED') {
+            status = 'MC';
+          } else if (cleanedVal === 'LR' || cleanedVal === 'LEAVE') {
+            status = 'LR';
+          } else if (cleanedVal === '') {
+            status = '';
+          } else {
+            return;
+          }
+
+          setAttendanceMap(prev => ({
+            ...prev,
+            [`${studentId}_${sessionDate}`]: status
+          }));
+          onUpdateAttendance(studentId, sessionDate, status);
+        }
+      });
+    });
+  };
+
   useEffect(() => {
-    const map: { [key: string]: 'Y' | 'N' | 'MC' } = {};
+    const map: { [key: string]: 'Y' | 'N' | 'MC' | 'LR' | '' } = {};
     attendance.forEach(rec => {
       map[`${rec.student_matric_id}_${rec.session_date}`] = rec.status;
     });
@@ -98,12 +181,14 @@ export default function AttendanceRegistry({ students, attendance, onUpdateAtten
   }, [courseInfo]);
 
   const handleCellClick = (matricId: string, date: string) => {
-    const current = attendanceMap[`${matricId}_${date}`] || 'Y';
-    let next: 'Y' | 'N' | 'MC' = 'Y';
+    const current = attendanceMap[`${matricId}_${date}`] || '';
+    let next: 'Y' | 'N' | 'MC' | 'LR' | '' = '';
     
-    if (current === 'Y') next = 'N';
+    if (current === '') next = 'Y';
+    else if (current === 'Y') next = 'N';
     else if (current === 'N') next = 'MC';
-    else if (current === 'MC') next = 'Y';
+    else if (current === 'MC') next = 'LR';
+    else if (current === 'LR') next = '';
 
     // Optimistic local update
     setAttendanceMap(prev => ({
@@ -115,15 +200,16 @@ export default function AttendanceRegistry({ students, attendance, onUpdateAtten
   };
 
   const calculateStats = (matricId: string) => {
-    let y = 0, n = 0, mc = 0;
+    let y = 0, n = 0, mc = 0, lr = 0;
     dates.forEach(d => {
       const status = attendanceMap[`${matricId}_${d}`];
       if (status === 'Y') y++;
       else if (status === 'N') n++;
       else if (status === 'MC') mc++;
+      else if (status === 'LR') lr++;
     });
 
-    const totalActive = y + n + mc;
+    const totalActive = y + n + mc + lr;
     const rate = totalActive > 0 ? (y / totalActive) * 100 : 0;
 
     // Calculate prediction based on remaining future sessions
@@ -134,7 +220,7 @@ export default function AttendanceRegistry({ students, attendance, onUpdateAtten
     const isLockedOut = totalActive > 0 && maxPossibleRate < 80;
     const isWarning = totalActive > 0 && rate < 80 && !isLockedOut;
 
-    return { y, n, mc, rate, isLockedOut, isWarning, maxPossibleRate };
+    return { y, n, mc, lr, rate, isLockedOut, isWarning, maxPossibleRate };
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, key: string) => {
@@ -222,6 +308,18 @@ export default function AttendanceRegistry({ students, attendance, onUpdateAtten
 
   return (
     <div className="view-card" style={{ padding: '20px 15px' }}>
+      {!hidePrintHeader && (
+        <PrintHeader title="Student Monthly Attendance" courseInfo={courseInfo} />
+      )}
+      <h3 className="only-print" style={{ fontSize: '1.2rem', marginBottom: '12px', color: '#1e3a8a', borderBottom: '1px solid #1e3a8a', paddingBottom: '4px', textTransform: 'uppercase' }}>
+        Student Attendance Summary
+      </h3>
+      <style dangerouslySetInnerHTML={{__html: `
+        .attendance-cell:focus {
+          outline: 2px solid var(--primary) !important;
+          box-shadow: 0 0 8px var(--primary);
+        }
+      `}} />
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
         <h2 className="no-print">Attendance Tracking Registry</h2>
         <div style={{ display: 'flex', gap: '12px', fontSize: '0.8rem' }}>
@@ -234,6 +332,9 @@ export default function AttendanceRegistry({ students, attendance, onUpdateAtten
           <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             <span style={{ width: '12px', height: '12px', borderRadius: '3px', background: 'var(--warning)' }} /> Excused (MC)
           </span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <span style={{ width: '12px', height: '12px', borderRadius: '3px', background: '#8b5cf6' }} /> Leave (LR)
+          </span>
         </div>
       </div>
 
@@ -243,18 +344,57 @@ export default function AttendanceRegistry({ students, attendance, onUpdateAtten
             <tr>
               <th className="col-matric">Matric ID</th>
               <th className="col-name">Student Name</th>
-              {dates.map(d => (
-                <th key={d} className="no-print" style={{ fontSize: '0.75rem', padding: '10px 4px', minWidth: '34px' }}>{d}</th>
-              ))}
+              {dates.map(date => {
+                const allPresent = students.length > 0 && students.every(student => attendanceMap[`${student.matric_id}_${date}`] === 'Y');
+                return (
+                  <th key={date} className="no-print" style={{ fontSize: '0.75rem', padding: '6px 4px', minWidth: '34px', textAlign: 'center' }}>
+                    <div>{date}</div>
+                    <div style={{ marginTop: '4px' }}>
+                      <input
+                        type="checkbox"
+                        checked={allPresent}
+                        onChange={(e) => {
+                          const checked = e.target.checked;
+                          const targetStatus: 'Y' | 'N' | 'MC' | 'LR' | '' = checked ? 'Y' : '';
+                          const updates = students.map(student => ({
+                            student_matric_id: student.matric_id,
+                            session_date: date,
+                            status: targetStatus
+                          }));
+
+                          // Update local state map
+                          const newMap = { ...attendanceMap };
+                          students.forEach(student => {
+                            newMap[`${student.matric_id}_${date}`] = targetStatus;
+                          });
+                          setAttendanceMap(newMap);
+
+                          // Call bulk or fall back to loop
+                          if (onUpdateAttendanceBulk) {
+                            onUpdateAttendanceBulk(updates);
+                          } else {
+                            students.forEach(student => {
+                              onUpdateAttendance(student.matric_id, date, targetStatus);
+                            });
+                          }
+                        }}
+                        style={{ cursor: 'pointer', transform: 'scale(0.95)' }}
+                        title="Mark Y (Present) for all students"
+                      />
+                    </div>
+                  </th>
+                );
+              })}
               <th style={{ background: 'rgba(255,255,255,0.05)', borderLeft: '2px solid var(--primary)', minWidth: '40px' }}>Y</th>
               <th style={{ background: 'rgba(255,255,255,0.05)', minWidth: '40px' }}>N</th>
               <th style={{ background: 'rgba(255,255,255,0.05)', minWidth: '40px' }}>MC</th>
+              <th style={{ background: 'rgba(255,255,255,0.05)', minWidth: '40px' }}>LR</th>
               <th style={{ background: 'rgba(99, 102, 241, 0.15)', fontWeight: 'bold', minWidth: '60px' }}>Rate</th>
             </tr>
           </thead>
           <tbody>
-            {students.map(student => {
-              const { y, n, mc, rate, isLockedOut, isWarning, maxPossibleRate } = calculateStats(student.matric_id);
+            {students.map((student, rowIndex) => {
+              const { y, n, mc, lr, rate, isLockedOut, isWarning, maxPossibleRate } = calculateStats(student.matric_id);
               
               return (
                 <tr key={student.matric_id}>
@@ -298,14 +438,18 @@ export default function AttendanceRegistry({ students, attendance, onUpdateAtten
                     </div>
                   </td>
 
-                  {dates.map(date => {
-                    const status = attendanceMap[`${student.matric_id}_${date}`] || 'Y';
+                  {dates.map((date, colIndex) => {
+                    const status = attendanceMap[`${student.matric_id}_${date}`] || '';
                     return (
                       <td key={date} className="no-print" style={{ padding: '4px' }}>
                         <div
                           className={`attendance-cell ${status}`}
                           onClick={() => handleCellClick(student.matric_id, date)}
-                          style={{ margin: '0 auto' }}
+                          onKeyDown={e => handleKeyDown(e, rowIndex, colIndex)}
+                          onPaste={e => handlePasteAttendance(e, rowIndex, colIndex)}
+                          tabIndex={0}
+                          id={`attendance-cell-${rowIndex}-${colIndex}`}
+                          style={{ margin: '0 auto', outline: 'none' }}
                         >
                           {status}
                         </div>
@@ -317,6 +461,7 @@ export default function AttendanceRegistry({ students, attendance, onUpdateAtten
                   <td style={{ borderLeft: '2px solid var(--primary)', color: 'var(--secondary)', fontWeight: 600 }}>{y}</td>
                   <td style={{ color: 'var(--danger)', fontWeight: 600 }}>{n}</td>
                   <td style={{ color: 'var(--warning)', fontWeight: 600 }}>{mc}</td>
+                  <td style={{ color: '#8b5cf6', fontWeight: 600 }}>{lr}</td>
                   <td style={{
                     background: isLockedOut 
                       ? 'rgba(239, 68, 68, 0.18)' 
