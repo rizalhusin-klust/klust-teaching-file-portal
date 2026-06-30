@@ -23,8 +23,13 @@ app.use(cors());
 // Increase body limit to 50MB to accommodate large base64-encoded PDF uploads
 app.use(express.json({ limit: '50mb' }));
 
-// Serve uploaded files (PDFs, images) as static assets
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+const uploadsDir = process.env.APP_DATA_PATH 
+  ? path.join(process.env.APP_DATA_PATH, 'uploads') 
+  : path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+app.use('/uploads', express.static(uploadsDir));
 
 // Serve the built Vite frontend
 app.use(express.static(path.join(__dirname, '../client/dist')));
