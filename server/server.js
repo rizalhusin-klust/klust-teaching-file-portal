@@ -823,6 +823,15 @@ app.post('/api/admin/migrate-to-firestore', async (req, res) => {
 
 // Export for Firebase Cloud Functions v2
 
+// Log client errors back to server
+app.post('/api/log-error', (req, res) => {
+  console.error('\n======================================================');
+  console.error('[CLIENT RENDERING CRASH ERROR]:', req.body.error);
+  console.error('[STACK TRACE]:\n', req.body.stack);
+  console.error('======================================================\n');
+  res.json({ success: true });
+});
+
 // Catch-all to serve index.html for React SPA
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/dist/index.html'));
@@ -836,3 +845,6 @@ if (process.env.NODE_ENV !== 'production' && !process.env.FIREBASE_CONFIG && !pr
     console.log(`Server running at http://localhost:${port}`);
   });
 }
+
+export default app;
+
