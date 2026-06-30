@@ -12,7 +12,6 @@ import { onRequest } from 'firebase-functions/v2/https';
 import { dbService } from './dbService.js';
 import { uploadFile, deleteFile } from './storageService.js';
 import { calculateStudentGrades, calculateObeMetrics } from './calculationEngine.js';
-import { synchronizeUserDatabase } from './syncService.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -32,46 +31,8 @@ app.use(express.static(path.join(__dirname, '../client/dist')));
 
 
 
-const SUPABASE_URL = process.env.SUPABASE_URL || 'https://japjageoksjvedzoafaf.supabase.co';
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || '';
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-const tokenCache = new Map();
-
-// Periodic cache cleanup
-setInterval(() => {
-  const now = Date.now();
-  for (const [t, data] of tokenCache.entries()) {
-    if (data.expiresAt < now) {
-      tokenCache.delete(t);
-    }
-  }
-}, 10 * 60 * 1000);
-
 app.use('/api', (req, res, next) => {
   next();
-});
-
-// Sync database endpoint
-app.post('/api/sync', async (req, res) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Unauthorized: No token provided' });
-  }
-  const token = authHeader.split(' ')[1];
-  
-  try {
-    const { data: { user }, error } = await supabase.auth.getUser(token);
-    if (error || !user) {
-      return res.status(403).json({ error: 'Forbidden: Invalid or expired token' });
-    }
-    
-    await synchronizeUserDatabase(token, user.id);
-    return res.json({ success: true, message: 'Database synchronization completed successfully.' });
-  } catch (err) {
-    console.error('Error synchronizing database:', err);
-    return res.status(500).json({ error: 'Failed to synchronize database', details: err.message });
-  }
 });
 
 // 1. Dashboard Summary Stats
