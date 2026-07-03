@@ -46,32 +46,15 @@ const db = new sqlite3.Database(dbPath, (err) => {
         });
       });
 
-      // Hybrid sync migration: Add tracking columns and triggers to all 12 tables
+      // Clean up sync triggers to restore clean local offline mode
       const trackingTables = [
-        { name: 'course_info', clause: 'id = NEW.id' },
-        { name: 'students', clause: 'matric_id = NEW.matric_id AND course_id = NEW.course_id' },
-        { name: 'plos', clause: 'plo_no = NEW.plo_no AND course_id = NEW.course_id' },
-        { name: 'clos', clause: 'clo_no = NEW.clo_no AND course_id = NEW.course_id' },
-        { name: 'clo_plo_mappings', clause: 'clo_no = NEW.clo_no AND plo_no = NEW.plo_no AND course_id = NEW.course_id' },
-        { name: 'optional_groups', clause: 'id = NEW.id' },
-        { name: 'assessments', clause: 'id = NEW.id' },
-        { name: 'marks', clause: 'student_matric_id = NEW.student_matric_id AND assessment_id = NEW.assessment_id' },
-        { name: 'attendance', clause: 'student_matric_id = NEW.student_matric_id AND session_date = NEW.session_date AND course_id = NEW.course_id' },
-        { name: 'weekly_reports', clause: 'week_no = NEW.week_no AND course_id = NEW.course_id' },
-        { name: 'grade_thresholds', clause: 'grade = NEW.grade AND course_id = NEW.course_id' },
-        { name: 'planned_assessments', clause: 'id = NEW.id' }
+        'course_info', 'students', 'plos', 'clos', 'clo_plo_mappings',
+        'optional_groups', 'assessments', 'marks', 'attendance',
+        'weekly_reports', 'grade_thresholds', 'planned_assessments'
       ];
 
-      trackingTables.forEach(t => {
-        db.run(`ALTER TABLE ${t.name} ADD COLUMN updated_at TEXT DEFAULT CURRENT_TIMESTAMP`, (err) => {});
-        db.run(`ALTER TABLE ${t.name} ADD COLUMN deleted INTEGER DEFAULT 0`, (err) => {});
-        
-        db.run(`
-          CREATE TRIGGER IF NOT EXISTS update_${t.name}_time AFTER UPDATE ON ${t.name}
-          BEGIN
-            UPDATE ${t.name} SET updated_at = CURRENT_TIMESTAMP WHERE ${t.clause};
-          END;
-        `, (err) => {});
+      trackingTables.forEach(tableName => {
+        db.run(`DROP TRIGGER IF EXISTS update_${tableName}_time`, (err) => {});
       });
 
       seedData();
