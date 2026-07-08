@@ -26,6 +26,7 @@ export default function MiscDocs({ courseInfo, onRefresh, API_BASE, activeCourse
   const [inputLinks, setInputLinks] = useState<{ [key: string]: string }>({});
   const [uploadingKey, setUploadingKey] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<{ [key: string]: string }>({});
+  const [numSlots, setNumSlots] = useState<number>(1);
 
   useEffect(() => {
     if (courseInfo && courseInfo.portfolio_data) {
@@ -35,12 +36,20 @@ export default function MiscDocs({ courseInfo, onRefresh, API_BASE, activeCourse
         
         // Pre-fill link inputs
         const links: { [key: string]: string } = {};
+        let maxSavedIdx = 1;
         Object.keys(parsed).forEach(k => {
           if (parsed[k].type === 'link') {
             links[k] = parsed[k].value || '';
           }
+          if (k.startsWith('misc_doc_')) {
+            const idx = parseInt(k.replace('misc_doc_', ''), 10);
+            if (!isNaN(idx) && idx > maxSavedIdx) {
+              maxSavedIdx = idx;
+            }
+          }
         });
         setInputLinks(links);
+        setNumSlots(Math.max(1, maxSavedIdx));
       } catch (e) {
         console.error('Failed to parse portfolio_data:', e);
       }
@@ -304,7 +313,7 @@ export default function MiscDocs({ courseInfo, onRefresh, API_BASE, activeCourse
 
   const getSummaryData = () => {
     const summary = [];
-    for (let i = 1; i <= 5; i++) {
+    for (let i = 1; i <= numSlots; i++) {
       summary.push({
         label: `Miscellaneous Document ${i}`,
         item: portfolio[`misc_doc_${i}`]
@@ -369,11 +378,21 @@ export default function MiscDocs({ courseInfo, onRefresh, API_BASE, activeCourse
           Miscellaneous Documents
         </h2>
         <p className="no-print" style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '24px' }}>
-          Upload up to 5 Miscellaneous Documents. You can upload PDFs/Images or provide direct links to cloud storage folders.
+          Upload Miscellaneous Documents. You can upload PDFs/Images or provide direct links to cloud storage folders.
         </p>
 
         <div className="no-print" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
-          {[1, 2, 3, 4, 5].map(i => renderSlotCard(`misc_doc_${i}`, `Miscellaneous Document ${i}`))}
+          {Array.from({ length: numSlots }, (_, idx) => idx + 1).map(i => renderSlotCard(`misc_doc_${i}`, `Miscellaneous Document ${i}`))}
+        </div>
+
+        <div className="no-print" style={{ marginTop: '24px' }}>
+          <button
+            className="btn btn-secondary"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 16px', fontSize: '0.85rem' }}
+            onClick={() => setNumSlots(prev => prev + 1)}
+          >
+            ➕ Add More Document
+          </button>
         </div>
       </div>
     );
