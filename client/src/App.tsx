@@ -324,6 +324,109 @@ function App() {
     }
   };
 
+  const loadAndRenderPDFs = async (container: HTMLElement) => {
+    if (typeof (window as any).pdfjsLib === 'undefined') {
+      await new Promise<void>((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = '/pdf.min.js';
+        script.onload = () => resolve();
+        script.onerror = () => {
+          const cdnScript = document.createElement('script');
+          cdnScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+          cdnScript.onload = () => resolve();
+          cdnScript.onerror = () => reject(new Error('Failed to load PDF.js'));
+          document.head.appendChild(cdnScript);
+        };
+        document.head.appendChild(script);
+      });
+    }
+
+    const pdfjsLib = (window as any).pdfjsLib;
+    pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
+
+    const links = container.querySelectorAll('a');
+    const pdfLinks: HTMLAnchorElement[] = [];
+    links.forEach(link => {
+      const href = link.getAttribute('href');
+      if (href && href.toLowerCase().endsWith('.pdf')) {
+        pdfLinks.push(link);
+      }
+    });
+
+    console.log(`Found ${pdfLinks.length} PDF link(s) to render inline.`);
+
+    for (const link of pdfLinks) {
+      const href = link.getAttribute('href')!;
+      const resolvedUrl = href.startsWith('http') ? href : (window.location.origin + href);
+
+      let nextSibling = link.nextElementSibling;
+      if (nextSibling && nextSibling.classList.contains('rendered-pdf-container')) {
+        continue;
+      }
+
+      const pdfContainer = document.createElement('div');
+      pdfContainer.className = 'rendered-pdf-container';
+      pdfContainer.style.marginTop = '15px';
+      pdfContainer.style.marginBottom = '25px';
+      pdfContainer.style.display = 'flex';
+      pdfContainer.style.flexDirection = 'column';
+      pdfContainer.style.gap = '15px';
+      pdfContainer.style.width = '100%';
+      
+      const loadingText = document.createElement('div');
+      loadingText.className = 'pdf-loading-text';
+      loadingText.innerText = `⏳ Loading inline preview for ${href.split('/').pop()}...`;
+      loadingText.style.fontSize = '0.85rem';
+      loadingText.style.color = '#64748b';
+      pdfContainer.appendChild(loadingText);
+      
+      const insertAfterNode = link.closest('.view-card') || link;
+      insertAfterNode.parentNode?.insertBefore(pdfContainer, insertAfterNode.nextSibling);
+
+      try {
+        const res = await fetch(resolvedUrl);
+        if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+        const arrayBuffer = await res.arrayBuffer();
+
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        
+        pdfContainer.removeChild(loadingText);
+
+        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+          const page = await pdf.getPage(pageNum);
+          
+          const viewport = page.getViewport({ scale: 1.5 });
+          const canvas = document.createElement('canvas');
+          const context = canvas.getContext('2d')!;
+          canvas.height = viewport.height;
+          canvas.width = viewport.width;
+
+          await page.render({ canvasContext: context, viewport }).promise;
+
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+
+          const img = document.createElement('img');
+          img.className = 'rendered-pdf-page';
+          img.src = dataUrl;
+          img.style.width = '100%';
+          img.style.maxWidth = '100%';
+          img.style.display = 'block';
+          img.style.border = '1px solid #e2e8f0';
+          img.style.borderRadius = '4px';
+          img.style.boxShadow = '0 1px 3px 0 rgba(0, 0, 0, 0.1)';
+          img.style.pageBreakAfter = 'always';
+          img.style.breakAfter = 'page';
+
+          pdfContainer.appendChild(img);
+        }
+      } catch (err: any) {
+        console.error(`Failed to load PDF ${resolvedUrl}:`, err);
+        loadingText.innerText = `❌ Failed to render PDF: ${err.message}`;
+        loadingText.style.color = '#ef4444';
+      }
+    }
+  };
+
   const handlePrintAll = () => {
     setIsPrintingAll(true);
     document.body.classList.add('print-all-mode');
@@ -334,6 +437,14 @@ function App() {
     };
     
     setTimeout(async () => {
+      if (printAllRef.current) {
+        try {
+          await loadAndRenderPDFs(printAllRef.current);
+        } catch (e) {
+          console.error('Error rendering PDFs inline:', e);
+        }
+      }
+
       // @ts-ignore
       if (window.electronAPI && window.electronAPI.exportToPdf) {
         const year = courseInfo?.semester?.match(/[0-9]{4}/)?.[0] || new Date().getFullYear().toString();
@@ -364,6 +475,14 @@ function App() {
 
     // Wait for React to fully render the overlay
     await new Promise(r => setTimeout(r, 500));
+
+    if (printAllRef.current) {
+      try {
+        await loadAndRenderPDFs(printAllRef.current);
+      } catch (e) {
+        console.error('Error rendering PDFs inline:', e);
+      }
+    }
 
     const sections = printAllRef.current?.querySelectorAll('.print-all-section');
     if (!sections || sections.length === 0) {
@@ -722,6 +841,27 @@ function App() {
       .content { overflow: visible !important; }
       .panel { display: none !important; }
       .panel.active { display: block !important; }
+    }
+
+    .rendered-pdf-container {
+      width: 100% !important;
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 15px !important;
+      margin-top: 15px !important;
+      margin-bottom: 25px !important;
+      page-break-inside: auto !important;
+      break-inside: auto !important;
+    }
+    .rendered-pdf-page {
+      width: 100% !important;
+      max-width: 100% !important;
+      display: block !important;
+      border: 1px solid #cbd5e1 !important;
+      border-radius: 4px !important;
+      page-break-after: always !important;
+      break-after: page !important;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1) !important;
     }
   </style>
 </head>
@@ -1397,6 +1537,27 @@ function App() {
               background: #3b82f6 !important;
               -webkit-print-color-adjust: exact !important;
               print-color-adjust: exact !important;
+            }
+
+            .rendered-pdf-container {
+              width: 100% !important;
+              display: flex !important;
+              flex-direction: column !important;
+              gap: 15px !important;
+              margin-top: 15px !important;
+              margin-bottom: 25px !important;
+              page-break-inside: auto !important;
+              break-inside: auto !important;
+            }
+            .rendered-pdf-page {
+              width: 100% !important;
+              max-width: 100% !important;
+              display: block !important;
+              border: 1px solid #cbd5e1 !important;
+              border-radius: 4px !important;
+              page-break-after: always !important;
+              break-after: page !important;
+              box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1) !important;
             }
           }
         `}</style>
