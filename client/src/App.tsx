@@ -872,6 +872,30 @@ function App() {
       break-after: page !important;
       box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1) !important;
     }
+
+    /* Reset sticky column backgrounds in exported HTML panels */
+    .panel-inner .spreadsheet-table th.col-matric,
+    .panel-inner .spreadsheet-table th.col-name,
+    .panel-inner table th.col-matric,
+    .panel-inner table th.col-name {
+      background: #f1f5f9 !important;
+      color: #1e3a8a !important;
+    }
+    .panel-inner .spreadsheet-table td.col-matric,
+    .panel-inner .spreadsheet-table td.col-name,
+    .panel-inner table td.col-matric,
+    .panel-inner table td.col-name {
+      background: white !important;
+      color: black !important;
+    }
+
+    /* Strip dark backgrounds from panels and cards */
+    .panel-inner div,
+    .panel-inner section {
+      background-color: transparent !important;
+      background: transparent !important;
+      border-color: #ccc !important;
+    }
   </style>
 </head>
 <body class="export-html-mode">
@@ -1567,6 +1591,30 @@ function App() {
               page-break-after: always !important;
               break-after: page !important;
               box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1) !important;
+            }
+
+            /* Reset sticky column backgrounds in print-all-overlay tables */
+            .print-all-section .spreadsheet-table th.col-matric,
+            .print-all-section .spreadsheet-table th.col-name,
+            .print-all-section table th.col-matric,
+            .print-all-section table th.col-name {
+              background: #f3f4f6 !important;
+              color: black !important;
+            }
+            .print-all-section .spreadsheet-table td.col-matric,
+            .print-all-section .spreadsheet-table td.col-name,
+            .print-all-section table td.col-matric,
+            .print-all-section table td.col-name {
+              background: white !important;
+              color: black !important;
+            }
+
+            /* Strip dark card/wrapper backgrounds from print elements */
+            .print-all-section div,
+            .print-all-section section {
+              background-color: transparent !important;
+              background: transparent !important;
+              border-color: #ccc !important;
             }
           }
         `}</style>
