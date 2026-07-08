@@ -151,7 +151,13 @@ function App() {
   const [isObeMenuOpen, setIsObeMenuOpen] = useState<boolean>(true);
   const [isPlanMenuOpen, setIsPlanMenuOpen] = useState<boolean>(true);
   const [isCourseworkMenuOpen, setIsCourseworkMenuOpen] = useState<boolean>(true);
-  const [token, setToken] = useState<string | null>('bypass-token');
+  const [token, setToken] = useState<string | null>(() => {
+    const isOnlineControl = import.meta.env.VITE_ONLINE_ACCESS_CONTROL === 'true';
+    if (isOnlineControl) {
+      return localStorage.getItem('token');
+    }
+    return 'bypass-token';
+  });
   const [isExamMenuOpen, setIsExamMenuOpen] = useState<boolean>(true);
   const [courses, setCourses] = useState<CourseInfo[]>([]);
   const [activeCourseId, setActiveCourseId] = useState<number | null>(() => {
@@ -1362,8 +1368,16 @@ function App() {
               <span className="nav-icon">🗂️</span> Miscellaneous Record
             </div>
           </li>
-          
-          
+          {import.meta.env.VITE_ONLINE_ACCESS_CONTROL === 'true' && (
+            <li>
+              <div className="nav-item" onClick={() => {
+                localStorage.removeItem('token');
+                setToken(null);
+              }} style={{ color: 'var(--danger)' }}>
+                <span className="nav-icon">🚪</span> Logout
+              </div>
+            </li>
+          )}
         </ul>
       </aside>
 
