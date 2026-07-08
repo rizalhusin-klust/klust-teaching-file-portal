@@ -147,14 +147,18 @@ const PrintSeparator = ({ number, title }: { number: number | string; title: str
 );
 
 function App() {
-  const [activeTab, setActiveTab] = useState<string>('setup');
+  const [activeTab, setActiveTab] = useState<string>(() => (new URLSearchParams(window.location.search).get('viewCourseId') ? 'dashboard' : 'setup'));
   const [isObeMenuOpen, setIsObeMenuOpen] = useState<boolean>(true);
   const [isPlanMenuOpen, setIsPlanMenuOpen] = useState<boolean>(true);
   const [isCourseworkMenuOpen, setIsCourseworkMenuOpen] = useState<boolean>(true);
   const [token, setToken] = useState<string | null>('bypass-token');
   const [isExamMenuOpen, setIsExamMenuOpen] = useState<boolean>(true);
   const [courses, setCourses] = useState<CourseInfo[]>([]);
-  const [activeCourseId, setActiveCourseId] = useState<number | null>(null);
+  const [activeCourseId, setActiveCourseId] = useState<number | null>(() => {
+    const idStr = new URLSearchParams(window.location.search).get('viewCourseId');
+    return idStr ? parseInt(idStr, 10) : null;
+  });
+  const isAuditorMode = !!new URLSearchParams(window.location.search).get('viewCourseId');
   const [courseInfo, setCourseInfo] = useState<CourseInfo | null>(null);
   const [students, setStudents] = useState<Student[]>([]);
   const [assessments, setAssessments] = useState<Assessment[]>([]);
@@ -1209,7 +1213,7 @@ function App() {
 
   return (
     <>
-      <div className="app-container">
+      <div className={`app-container${isAuditorMode ? ' auditor-mode' : ''}`}>
       {/* Sidebar navigation */}
       <aside className={`sidebar${sidebarCollapsed ? ' sidebar-collapsed' : ''}`}>
         <div className="logo-container" style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '18px', marginBottom: '24px' }}>
@@ -1217,11 +1221,13 @@ function App() {
           <span className="logo-text" style={{ fontSize: '0.85rem', letterSpacing: '0.05em', textTransform: 'uppercase', color: 'var(--text-active)', fontWeight: '700', lineHeight: '1.2' }}>KLUST TF PORTAL <span style={{ color: 'var(--primary)', fontWeight: '800' }}>v.1</span></span>
         </div>
         <ul className="nav-links">
-          <li>
-            <div className={`nav-item ${activeTab === 'setup' ? 'active' : ''}`} onClick={() => setActiveTab('setup')}>
-              <span className="nav-icon">⚙️</span> Main Tables
-            </div>
-          </li>
+          {!isAuditorMode && (
+            <li>
+              <div className={`nav-item ${activeTab === 'setup' ? 'active' : ''}`} onClick={() => setActiveTab('setup')}>
+                <span className="nav-icon">⚙️</span> Main Tables
+              </div>
+            </li>
+          )}
           <li>
             <div className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveTab('dashboard')}>
               <span className="nav-icon">📊</span> Dashboard
@@ -1363,6 +1369,32 @@ function App() {
 
       {/* Main Panel */}
       <main className={`main-content${sidebarCollapsed ? ' sidebar-collapsed' : ''}`}>
+        {isAuditorMode && (
+          <div className="auditor-banner no-print" style={{
+            background: 'linear-gradient(90deg, #b91c1c, #7f1d1d)',
+            color: 'white',
+            padding: '10px 16px',
+            fontSize: '0.9rem',
+            fontWeight: 'bold',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.2)',
+            zIndex: 10
+          }}>
+            <span>👁️ Auditor Mode (Read-Only) — Viewing Course: {courseInfo?.course_code}</span>
+            <button 
+              className="btn btn-secondary btn-export" 
+              style={{ padding: '4px 10px', fontSize: '0.78rem', background: 'rgba(255,255,255,0.2)', border: 'none', color: 'white' }}
+              onClick={() => {
+                window.location.href = window.location.origin;
+              }}
+            >
+              Exit Auditor View
+            </button>
+          </div>
+        )}
+
         {/* ── Row 1: Course Banner ── */}
         <div className="header-banner no-print">
           <button
@@ -1389,6 +1421,25 @@ function App() {
           >
             {theme === 'dark' ? '☀️ Light' : '🌙 Dark'}
           </button>
+          
+          {activeCourseId !== null && !isAuditorMode && (
+            <button
+              className="btn btn-secondary"
+              onClick={() => {
+                const shareUrl = `${window.location.origin}/?viewCourseId=${activeCourseId}`;
+                navigator.clipboard.writeText(shareUrl).then(() => {
+                  alert(`Copied shareable auditor link to clipboard!\n${shareUrl}`);
+                }).catch(err => {
+                  console.error('Failed to copy link:', err);
+                  alert(`Auditor link: ${shareUrl}`);
+                });
+              }}
+              title="Copy read-only view link for auditor"
+            >
+              🔗 Share with Auditor
+            </button>
+          )}
+
           <button className="btn btn-secondary" onClick={async () => {
             // @ts-ignore
             if (window.electronAPI && window.electronAPI.exportToPdf) {
@@ -1403,10 +1454,10 @@ function App() {
           }} title="Export current tab view as PDF">
             {activeTab === 'dashboard' ? '📄 Export Cover' : '📄 Export PDF'}
           </button>
-          {activeTab === 'setup' && (
+          {(activeTab === 'setup' || isAuditorMode) && (
             <>
               <button
-                className="btn btn-primary"
+                className="btn btn-primary btn-export"
                 onClick={handlePrintAll}
                 disabled={isPrintingAll || isExportingHtml}
                 title="Export all documents as PDF"
@@ -1425,7 +1476,7 @@ function App() {
                 {isPrintingAll ? '⏳ Exporting...' : '📄 Export All to PDF'}
               </button>
               <button
-                className="btn btn-primary"
+                className="btn btn-primary btn-export"
                 onClick={handleExportHtml}
                 disabled={isPrintingAll || isExportingHtml}
                 title="Export all documents as a single HTML file"

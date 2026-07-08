@@ -1081,3 +1081,20 @@ body.export-html-mode .export-only {
   background-color: #3b82f6;
 }
 
+/* Auditor Mode (Read-Only) Styles */
+.auditor-mode input,
+.auditor-mode textarea,
+.auditor-mode select {
+  pointer-events: none !important;
+  user-select: none !important;
+  opacity: 0.85 !important;
+}
+
+.auditor-mode button:not(.btn-secondary):not(.btn-export):not(.tab-btn):not(.sidebar-toggle-btn),
+.auditor-mode .btn:not(.btn-secondary):not(.btn-export):not(.tab-btn):not(.sidebar-toggle-btn),
+.auditor-mode label[for],
+.auditor-mode label[htmlFor],
+.auditor-mode .no-auditor {
+  display: none !important;
+}
+
