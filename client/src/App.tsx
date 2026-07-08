@@ -355,14 +355,23 @@ function App() {
 
     console.log(`Found ${pdfLinks.length} PDF link(s) to render inline.`);
 
+    const renderedUrls = new Set<string>();
+
     for (const link of pdfLinks) {
       const href = link.getAttribute('href')!;
       const resolvedUrl = href.startsWith('http') ? href : (window.location.origin + href);
 
-      let nextSibling = link.nextElementSibling;
-      if (nextSibling && nextSibling.classList.contains('rendered-pdf-container')) {
+      if (renderedUrls.has(resolvedUrl)) {
         continue;
       }
+
+      let nextSibling = link.nextElementSibling;
+      if (nextSibling && nextSibling.classList.contains('rendered-pdf-container')) {
+        renderedUrls.add(resolvedUrl);
+        continue;
+      }
+
+      renderedUrls.add(resolvedUrl);
 
       const pdfContainer = document.createElement('div');
       pdfContainer.className = 'rendered-pdf-container';
