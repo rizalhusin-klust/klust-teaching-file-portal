@@ -1,7 +1,8 @@
 import sqliteDb from './database.js';
+import admin from 'firebase-admin';
 
-let dbType = 'sqlite'; // Forced local database mode for Electron
-const firestore = null;
+let dbType = process.env.DB_TYPE || 'sqlite';
+const firestore = dbType === 'firestore' ? admin.firestore() : null;
 
 // SQLite Promise Helpers
 const sqliteAll = (sql, params = []) => {
