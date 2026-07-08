@@ -7,14 +7,29 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const uploadsDir = process.env.APP_DATA_PATH ? path.join(process.env.APP_DATA_PATH, 'uploads') : path.resolve(__dirname, 'uploads');
 
+function ensureFirebaseInitialized() {
+  if (admin.apps.length === 0) {
+    if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_PRIVATE_KEY && process.env.FIREBASE_CLIENT_EMAIL) {
+      admin.initializeApp({
+        credential: admin.credential.cert({
+          projectId: process.env.FIREBASE_PROJECT_ID,
+          clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+          privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+        }),
+        storageBucket: `${process.env.FIREBASE_PROJECT_ID}.appspot.com`
+      });
+    } else {
+      admin.initializeApp();
+    }
+  }
+}
+
 export async function uploadFile(courseId, fileName, folder, buffer, mimeType) {
   const useFirebase = process.env.NODE_ENV === 'production' || process.env.DB_TYPE === 'firestore';
 
   if (useFirebase) {
     try {
-      if (admin.apps.length === 0) {
-        admin.initializeApp();
-      }
+      ensureFirebaseInitialized();
       const bucket = admin.storage().bucket();
       const folderPath = folder ? `${folder}/` : '';
       const destination = `courses/${courseId}/${folderPath}${fileName}`;
@@ -54,9 +69,7 @@ export async function deleteFile(relativeOrAbsoluteUrl) {
   if (useFirebase) {
     if (relativeOrAbsoluteUrl.startsWith('https://storage.googleapis.com/')) {
       try {
-        if (admin.apps.length === 0) {
-          admin.initializeApp();
-        }
+        ensureFirebaseInitialized();
         const bucket = admin.storage().bucket();
         // Parse destination path from URL
         // Format: https://storage.googleapis.com/<bucket-name>/<path>
