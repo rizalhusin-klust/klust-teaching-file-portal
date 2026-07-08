@@ -36,6 +36,18 @@ app.use(express.static(path.join(__dirname, '../client/dist')));
 
 
 
+app.post('/api/login', (req, res) => {
+  const { email, password } = req.body;
+  const adminEmail = process.env.ADMIN_EMAIL || 'admin@klust.edu.my';
+  const adminPassword = process.env.ADMIN_PASSWORD || 'password123';
+
+  if (email === adminEmail && password === adminPassword) {
+    const token = jwt.sign({ email }, process.env.JWT_SECRET || 'jwt_secret_key', { expiresIn: '7d' });
+    return res.json({ token });
+  }
+  return res.status(401).json({ error: 'Invalid email or password' });
+});
+
 app.use('/api', (req, res, next) => {
   next();
 });

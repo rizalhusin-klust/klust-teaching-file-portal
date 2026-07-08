@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
-import { supabase } from '../supabaseClient';
 
 interface LoginProps {
   onLogin: (token: string) => void;
   API_BASE: string;
 }
 
-const Login: React.FC<LoginProps> = ({ onLogin }) => {
+const Login: React.FC<LoginProps> = ({ onLogin, API_BASE }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -18,15 +17,17 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     setError('');
 
     try {
-      const { data, error: authError } = await supabase.auth.signInWithPassword({
-        email,
-        password
+      const res = await fetch(`${API_BASE}/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
       });
+      const data = await res.json();
 
-      if (authError) {
-        setError(authError.message);
-      } else if (data?.session) {
-        onLogin(data.session.access_token);
+      if (!res.ok) {
+        setError(data.error || 'Invalid email or password');
+      } else if (data.token) {
+        onLogin(data.token);
       } else {
         setError('No session established');
       }
