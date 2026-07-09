@@ -1,6 +1,25 @@
-import sqlite3 from 'sqlite3';
 import path from 'path';
 import { fileURLToPath } from 'url';
+
+let sqlite3;
+try {
+  const sqliteModuleName = 'sqlite3';
+  sqlite3 = (await import(sqliteModuleName)).default;
+} catch (e) {
+  sqlite3 = {
+    Database: class MockDatabase {
+      constructor(path, callback) {
+        console.warn("WARNING: Running in SQLite mock mode on Vercel.");
+        if (callback) callback(null);
+      }
+      run(sql, params, callback) { if (typeof params === 'function') params(null); else if (callback) callback(null); }
+      all(sql, params, callback) { if (typeof params === 'function') params(null, []); else if (callback) callback(null, []); }
+      get(sql, params, callback) { if (typeof params === 'function') params(null, null); else if (callback) callback(null, null); }
+      close(callback) { if (callback) callback(null); }
+      serialize(callback) { callback(); }
+    }
+  };
+}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
