@@ -17,7 +17,8 @@ const Login: React.FC<LoginProps> = ({ onLogin, API_BASE }) => {
     setError('');
 
     try {
-      const res = await fetch(`${API_BASE}/login`, {
+      const authBase = import.meta.env.VITE_ONLINE_AUTH_URL || API_BASE;
+      const res = await fetch(`${authBase}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
