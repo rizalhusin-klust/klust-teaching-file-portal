@@ -223,6 +223,25 @@ function createTables() {
     weightage REAL,
     course_id INTEGER
   )`);
+
+  // Syllabus Weeks Table (LMS Port)
+  db.run(`CREATE TABLE IF NOT EXISTS syllabus_weeks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    week_number INTEGER,
+    title TEXT,
+    description TEXT,
+    file_url TEXT,
+    drive_file_id TEXT,
+    course_id INTEGER
+  )`);
+
+  // Assessment Deadlines Table (LMS Port)
+  db.run(`CREATE TABLE IF NOT EXISTS assessment_deadlines (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    assignment_name TEXT,
+    due_date TEXT,
+    course_id INTEGER
+  )`);
 }
 
 function seedData() {

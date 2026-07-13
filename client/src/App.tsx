@@ -19,6 +19,7 @@ import Login from './components/Login';
 import FinalResultDocs from './components/FinalResultDocs';
 import MiscDocs from './components/MiscDocs';
 import PrintHeader from './components/PrintHeader';
+import DeliveryAndCompliance from './components/DeliveryAndCompliance';
 
 export type Student = {
   matric_id: string;
@@ -1193,6 +1194,16 @@ function App() {
         return <AttendanceRegistry students={students} attendance={attendance} onUpdateAttendance={handleUpdateAttendance} onUpdateAttendanceBulk={handleUpdateAttendanceBulk} courseInfo={courseInfo} API_BASE={API_BASE} activeCourseId={activeCourseId} />;
       case 'reports':
         return <LecturerReport courseInfo={courseInfo} reports={reports} onRefresh={refreshAll} API_BASE={API_BASE} activeCourseId={activeCourseId} />;
+      case 'delivery_compliance':
+        return (
+          <DeliveryAndCompliance
+            courseInfo={courseInfo}
+            students={students}
+            API_BASE={API_BASE}
+            activeCourseId={activeCourseId}
+            onRefresh={refreshAll}
+          />
+        );
       case 'coursework_docs':
         return <CourseworkDocs courseInfo={courseInfo} onRefresh={refreshAll} API_BASE={API_BASE} activeCourseId={activeCourseId} programName={programName} />;
       case 'final_exam_docs':
@@ -1312,6 +1323,11 @@ function App() {
           <li>
             <div className={`nav-item ${activeTab === 'reports' ? 'active' : ''}`} onClick={() => setActiveTab('reports')}>
               <span className="nav-icon">📝</span> Weekly Reports
+            </div>
+          </li>
+          <li>
+            <div className={`nav-item ${activeTab === 'delivery_compliance' ? 'active' : ''}`} onClick={() => setActiveTab('delivery_compliance')}>
+              <span className="nav-icon">📅</span> Delivery & Compliance
             </div>
           </li>
           <li>

@@ -12,6 +12,7 @@ import { onRequest } from 'firebase-functions/v2/https';
 import { dbService } from './dbService.js';
 import { uploadFile, deleteFile } from './storageService.js';
 import { calculateStudentGrades, calculateObeMetrics } from './calculationEngine.js';
+import { getOrCreateNestedFolders, uploadFileToDrive } from './driveService.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -858,6 +859,116 @@ app.post('/api/log-error', (req, res) => {
   console.error('[STACK TRACE]:\n', req.body.stack);
   console.error('======================================================\n');
   res.json({ success: true });
+});
+
+// --- Syllabus Weeks Endpoints (LMS integration) ---
+app.get('/api/courses/:courseId/syllabus-weeks', async (req, res) => {
+  const { courseId } = req.params;
+  try {
+    const weeks = await dbService.getSyllabusWeeks(courseId);
+    res.json(weeks);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/courses/:courseId/syllabus-weeks', async (req, res) => {
+  const { courseId } = req.params;
+  const { id, week_number, title, description, file_url, drive_file_id } = req.body;
+  try {
+    const result = await dbService.saveSyllabusWeek({
+      id,
+      week_number,
+      title,
+      description,
+      file_url,
+      drive_file_id,
+      course_id: courseId
+    });
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/courses/:courseId/syllabus-weeks/:id', async (req, res) => {
+  const { courseId, id } = req.params;
+  try {
+    await dbService.deleteSyllabusWeek(id, courseId);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Upload material to a syllabus week (supports Google Drive if credentials exist)
+app.post('/api/courses/:courseId/syllabus-weeks/upload', async (req, res) => {
+  const { courseId } = req.params;
+  const { base64Data, filename, mimeType, weekNumber, courseCode } = req.body;
+  
+  if (!base64Data || !filename) {
+    return res.status(400).json({ error: "Missing file payload" });
+  }
+  
+  try {
+    const buffer = Buffer.from(base64Data.split(',')[1] || base64Data, 'base64');
+    
+    // Resolve destination folder segments (Course Code / Lectures / Week X)
+    const code = courseCode || 'COURSE';
+    const folderSegments = [code, "Lectures", `Week ${weekNumber || 1}`];
+    
+    // Create folders (Google Drive or local path)
+    const folderId = await getOrCreateNestedFolders(folderSegments);
+    
+    // Upload file
+    const uploadResult = await uploadFileToDrive(buffer, filename, mimeType, folderId);
+    
+    res.json({
+      success: true,
+      file_url: uploadResult.webViewLink,
+      drive_file_id: uploadResult.fileId,
+      local_path: uploadResult.localPath
+    });
+  } catch (err) {
+    console.error("Weekly syllabus file upload error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// --- Deadlines Endpoints (LMS integration) ---
+app.get('/api/courses/:courseId/deadlines', async (req, res) => {
+  const { courseId } = req.params;
+  try {
+    const deadlines = await dbService.getAssessmentDeadlines(courseId);
+    res.json(deadlines);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/courses/:courseId/deadlines', async (req, res) => {
+  const { courseId } = req.params;
+  const { assignment_name, due_date } = req.body;
+  try {
+    const result = await dbService.saveAssessmentDeadline({
+      assignment_name,
+      due_date,
+      course_id: courseId
+    });
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/courses/:courseId/deadlines/:name', async (req, res) => {
+  const { courseId, name } = req.params;
+  try {
+    await dbService.deleteAssessmentDeadline(name, courseId);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // Catch-all to serve index.html for React SPA

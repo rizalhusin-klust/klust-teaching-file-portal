@@ -1,0 +1,3 @@
+Error opening database: SQLITE_CANTOPEN: unable to open database file
+(node:26176) [DEP0180] DeprecationWarning: fs.Stats constructor is deprecated.
+(Use `Course Manager --trace-deprecation ...` to show where the warning was created)

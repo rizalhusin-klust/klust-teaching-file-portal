@@ -1,6 +1,6 @@
 {
   "name": "course-manager-monorepo",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "private": true,
   "scripts": {
     "install:all": "npm install && npm install --prefix client && npm install --prefix server",
@@ -24,6 +24,7 @@
     "express": "^4.19.2",
     "firebase-admin": "^13.10.0",
     "firebase-functions": "^7.2.5",
+    "googleapis": "^144.0.0",
     "jsonwebtoken": "^9.0.3"
   },
   "main": "main.js",

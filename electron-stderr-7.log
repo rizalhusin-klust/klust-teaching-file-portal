@@ -1,0 +1,9 @@
+Failed to start Express server: file:///C:/Users/RIZAL%20HUSIN/.gemini/antigravity/scratch/course-manager-app/dist/win-unpacked/resources/app.asar/server/syncService.js:2
+import dbService from './dbService.js';
+       ^^^^^^^^^
+SyntaxError: The requested module './dbService.js' does not provide an export named 'default'
+    at #asyncInstantiate (node:internal/modules/esm/module_job:327:21)
+    at async ModuleJob.run (node:internal/modules/esm/module_job:431:5)
+    at async node:internal/modules/esm/loader:633:26
+    at async createWindow (file:///C:/Users/RIZAL%20HUSIN/.gemini/antigravity/scratch/course-manager-app/dist/win-unpacked/resources/app.asar/main.js:62:37)
+[10636:0630/165020.492:WARNING:content\browser\btm\btm_database.cc:128] Failed to initialize the DIPS SQLite database.

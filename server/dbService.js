@@ -1048,5 +1048,104 @@ export const dbService = {
       await sqliteRun("DELETE FROM grade_thresholds WHERE grade = ? AND course_id = ?", [grade, courseId]);
       return { success: true };
     }
+  },
+
+  getSyllabusWeeks: async (courseId) => {
+    if (dbType === 'firestore') {
+      const snap = await firestore.collection('courses').doc(String(courseId)).collection('syllabus_weeks').orderBy('week_number', 'asc').get();
+      const list = [];
+      snap.forEach(doc => {
+        list.push({ id: doc.id, ...doc.data() });
+      });
+      return list;
+    } else {
+      return sqliteAll("SELECT * FROM syllabus_weeks WHERE course_id = ? ORDER BY week_number ASC", [courseId]);
+    }
+  },
+
+  saveSyllabusWeek: async (week) => {
+    const courseId = String(week.course_id);
+    if (dbType === 'firestore') {
+      const docRef = week.id 
+        ? firestore.collection('courses').doc(courseId).collection('syllabus_weeks').doc(String(week.id))
+        : firestore.collection('courses').doc(courseId).collection('syllabus_weeks').doc();
+      const data = {
+        week_number: Number(week.week_number),
+        title: String(week.title || ''),
+        description: String(week.description || ''),
+        file_url: String(week.file_url || ''),
+        drive_file_id: String(week.drive_file_id || ''),
+        course_id: week.course_id
+      };
+      await docRef.set(data, { merge: true });
+      return { success: true, id: docRef.id };
+    } else {
+      if (week.id) {
+        await sqliteRun(
+          "UPDATE syllabus_weeks SET week_number = ?, title = ?, description = ?, file_url = ?, drive_file_id = ? WHERE id = ? AND course_id = ?",
+          [Number(week.week_number), week.title, week.description, week.file_url, week.drive_file_id, week.id, week.course_id]
+        );
+        return { success: true, id: week.id };
+      } else {
+        const res = await sqliteRun(
+          "INSERT INTO syllabus_weeks (week_number, title, description, file_url, drive_file_id, course_id) VALUES (?, ?, ?, ?, ?, ?)",
+          [Number(week.week_number), week.title, week.description, week.file_url, week.drive_file_id, week.course_id]
+        );
+        return { success: true, id: res.lastID };
+      }
+    }
+  },
+
+  deleteSyllabusWeek: async (id, courseId) => {
+    if (dbType === 'firestore') {
+      await firestore.collection('courses').doc(String(courseId)).collection('syllabus_weeks').doc(String(id)).delete();
+      return { success: true };
+    } else {
+      await sqliteRun("DELETE FROM syllabus_weeks WHERE id = ? AND course_id = ?", [id, courseId]);
+      return { success: true };
+    }
+  },
+
+  getAssessmentDeadlines: async (courseId) => {
+    if (dbType === 'firestore') {
+      const snap = await firestore.collection('courses').doc(String(courseId)).collection('assessment_deadlines').get();
+      const list = [];
+      snap.forEach(doc => {
+        list.push({ id: doc.id, ...doc.data() });
+      });
+      return list;
+    } else {
+      return sqliteAll("SELECT * FROM assessment_deadlines WHERE course_id = ?", [courseId]);
+    }
+  },
+
+  saveAssessmentDeadline: async (deadline) => {
+    const courseId = String(deadline.course_id);
+    const assignmentName = String(deadline.assignment_name);
+    if (dbType === 'firestore') {
+      const ref = firestore.collection('courses').doc(courseId).collection('assessment_deadlines').doc(assignmentName);
+      await ref.set({
+        assignment_name: assignmentName,
+        due_date: String(deadline.due_date || ''),
+        course_id: deadline.course_id
+      });
+      return { success: true };
+    } else {
+      await sqliteRun(
+        "INSERT OR REPLACE INTO assessment_deadlines (assignment_name, due_date, course_id) VALUES (?, ?, ?)",
+        [assignmentName, deadline.due_date, deadline.course_id]
+      );
+      return { success: true };
+    }
+  },
+
+  deleteAssessmentDeadline: async (assignmentName, courseId) => {
+    if (dbType === 'firestore') {
+      await firestore.collection('courses').doc(String(courseId)).collection('assessment_deadlines').doc(String(assignmentName)).delete();
+      return { success: true };
+    } else {
+      await sqliteRun("DELETE FROM assessment_deadlines WHERE assignment_name = ? AND course_id = ?", [assignmentName, courseId]);
+      return { success: true };
+    }
   }
 };
