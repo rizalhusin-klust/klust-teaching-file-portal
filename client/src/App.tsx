@@ -20,6 +20,7 @@ import FinalResultDocs from './components/FinalResultDocs';
 import MiscDocs from './components/MiscDocs';
 import PrintHeader from './components/PrintHeader';
 import DeliveryAndCompliance from './components/DeliveryAndCompliance';
+import AssessmentPanel from './components/AssessmentPanel';
 
 export type Student = {
   matric_id: string;
@@ -1204,6 +1205,8 @@ function App() {
             onRefresh={refreshAll}
           />
         );
+      case 'assessment':
+        return <AssessmentPanel />;
       case 'coursework_docs':
         return <CourseworkDocs courseInfo={courseInfo} onRefresh={refreshAll} API_BASE={API_BASE} activeCourseId={activeCourseId} programName={programName} />;
       case 'final_exam_docs':
@@ -1328,6 +1331,11 @@ function App() {
           <li>
             <div className={`nav-item ${activeTab === 'delivery_compliance' ? 'active' : ''}`} onClick={() => setActiveTab('delivery_compliance')}>
               <span className="nav-icon">📅</span> Delivery & Compliance
+            </div>
+          </li>
+          <li>
+            <div className={`nav-item ${activeTab === 'assessment' ? 'active' : ''}`} onClick={() => setActiveTab('assessment')}>
+              <span className="nav-icon">📊</span> Assessment
             </div>
           </li>
           <li>

@@ -971,6 +971,78 @@ app.delete('/api/courses/:courseId/deadlines/:name', async (req, res) => {
   }
 });
 
+// Serve the Assessment Manager static files
+app.use('/assessment-app', express.static(path.join(__dirname, 'assessment-dist')));
+
+// Fallback to assessment index.html for Next.js routing within /assessment-app
+app.get('/assessment-app/*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'assessment-dist/index.html'));
+});
+
+// coursework mock API endpoint for Assessment Manager
+app.post('/api/coursework', (req, res) => {
+  const { action } = req.body;
+  const timestamp = new Date().toISOString();
+
+  if (action === 'SAVE_DESIGN') {
+    const { courseName, components, cloPloMapping } = req.body;
+    return res.json({
+      success: true,
+      simulated: true,
+      message: 'Saved design successfully in simulation mode.',
+      data: { timestamp, courseName, components, cloPloMapping }
+    });
+  }
+
+  if (action === 'SAVE_RUBRIC') {
+    const { courseName, componentName, rubrics } = req.body;
+    return res.json({
+      success: true,
+      simulated: true,
+      message: 'Saved rubrics successfully in simulation mode.',
+      data: { timestamp, courseName, componentName, rubrics }
+    });
+  }
+
+  if (action === 'SAVE_GRADES') {
+    const { courseName, grades } = req.body;
+    return res.json({
+      success: true,
+      simulated: true,
+      message: 'Student grades synced successfully in simulation mode.',
+      data: { timestamp, courseName, count: grades ? grades.length : 0 }
+    });
+  }
+
+  if (action === 'PROVISION_DRIVE') {
+    const { courseCode, components } = req.body;
+    const folderLinks = {};
+    if (components && Array.isArray(components)) {
+      components.forEach((c) => {
+        folderLinks[c.id] = `https://drive.google.com/drive/folders/mock_${c.id}`;
+      });
+    }
+    return res.json({
+      success: true,
+      message: 'Folders provisioned in Google Drive simulator successfully.',
+      simulated: true,
+      folderLinks
+    });
+  }
+
+  if (action === 'EXPORT_SAMPLING') {
+    const { courseName, samplingRule, sampledStudentIds } = req.body;
+    return res.json({
+      success: true,
+      simulated: true,
+      message: 'Moderator pack compiled and logged in simulation mode.',
+      data: { timestamp, courseName, samplingRule, count: sampledStudentIds ? sampledStudentIds.length : 0 }
+    });
+  }
+
+  res.status(400).json({ error: `Unsupported action: ${action}` });
+});
+
 // Catch-all to serve index.html for React SPA
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/dist/index.html'));

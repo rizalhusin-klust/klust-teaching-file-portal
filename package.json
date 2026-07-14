@@ -1,15 +1,16 @@
 {
   "name": "course-manager-monorepo",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "private": true,
   "scripts": {
-    "install:all": "npm install && npm install --prefix client && npm install --prefix server",
+    "install:all": "npm install && npm install --prefix client && npm install --prefix server && npm install --prefix assessment-manager",
     "client": "npm run dev --prefix client",
     "server": "npm run start --prefix server",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "start": "electron .",
     "build:client": "cd client && npm run build",
-    "build": "npm run build:client && electron-builder",
+    "build:assessment": "npm run build --prefix assessment-manager && xcopy /E /I /Y /Q assessment-manager\\out server\\assessment-dist",
+    "build": "npm run build:client && npm run build:assessment && electron-builder",
     "vercel-build": "npm install --prefix client && npm run build:client"
   },
   "devDependencies": {
